@@ -2,18 +2,20 @@ class ChessBoard:
     # Class-level board definition
     board = [[" " for _ in range(9)] for _ in range(9)]
 
+
     @staticmethod
     def setBoard():
         # Label the top row with A-H
         for i in range(1, len(ChessBoard.board[0])):
-            ChessBoard.board[0][i] = chr(ord('A') + i - 1) + " "
+            ChessBoard.board[0][i] = " "+chr(ord('A') + i - 1) + " "
         # Label the left column with 1-8
         for i in range(1, len(ChessBoard.board)):
             ChessBoard.board[i][0] = str(i)
         # Put dots as blank spaces
         for i in range(1, len(ChessBoard.board)):
             for j in range(1, len(ChessBoard.board[i])):
-                ChessBoard.board[i][j] = ". "
+                ChessBoard.board[i][j] = " . "
+
 
     @staticmethod
     def movePiece(rowXO, colYO, rowXN, colYN):
@@ -28,14 +30,26 @@ class ChessBoard:
             raise ValueError("Invalid move coordinates. Rows must be 1-8, and columns A-H.")
 
         # Perform the move
-        ChessBoard.board[new_row][new_col] = ChessBoard.board[old_row][old_col]
-        ChessBoard.board[old_row][old_col] = ". "  # Empty the original square
+        if not(ChessBoard.board[old_row][old_col]==" . "):
+            ChessBoard.board[new_row][new_col] = ChessBoard.board[old_row][old_col]
+            ChessBoard.board[old_row][old_col] = ". "  # Empty the original square
+
+    @staticmethod
+    def putThePieceDown(piece, cords):
+        # `cords` should be a tuple (row, column) 
+        row = cords[0]
+        col = cords[1] 
+        ChessBoard.board[row][col] = piece
+
 
     @staticmethod
     def __str__():
         # Convert the board into a string for display
         ret = ""
         for row in ChessBoard.board:
-            ret += " ".join(row) + "\n"
-        return ret
+            for place in row:
+                ret+=str(place)
+            ret+="\n"
+        return ret+"\n"
+
 

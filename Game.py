@@ -1,16 +1,24 @@
-from Pawn import Pawn
 from ChessBoard import ChessBoard
+from Pawn import Pawn
 
-pawn = Pawn("pawn",True)
-print(pawn)
 
-# Create and prepare the chessboard
+def setBoard():
+    ChessBoard.setBoard()
+    # Put the white pawns
+    for i in range(1, len(ChessBoard.board[2])):
+        ChessBoard.putThePieceDown(Pawn("pawn", True), [2, i])
+    # Put the black pawns
+    for i in range(1, len(ChessBoard.board[7])):
+        ChessBoard.putThePieceDown(Pawn("pawn", False), [7, i])
 
-ChessBoard.setBoard()
-ChessBoard.board[5][5]= "k "
-# ChessBoard.board[3][4]="q "
+setBoard()
+
 print(ChessBoard())
-# ChessBoard.movePiece(5,"e", 3, "D")
-# print(ChessBoard.display())
-# ChessBoard.movePiece( 3, "D",5,"C")
-# print(ChessBoard.display())
+
+
+def playGame():
+    t=True
+    while t :
+        print(ChessBoard())
+        choice = input("What do you want to do?")
+        pass
