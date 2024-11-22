@@ -17,7 +17,7 @@ class Pawn(ChessPiece):
         if self.white:
             if self.countre ==0:
                 if ChessBoard.board[cordsX][cordsY+2] == " . ":
-                    ret.append((cordsX,cordsY+2))
+                    ret.append((ord(cordsX+64),cordsY+2))
             if ChessBoard.board[cordsX][cordsY+1] == " . ":
-                ret.append((cordsX,cordsY+1))
+                ret.append((ord(cordsX+64),cordsY+1))
         return ret
