@@ -7,7 +7,10 @@ class Knight(ChessPiece):
         super().__init__(name, white)
     
     def __str__(self):
-        return super().__str__()
+        if self.white == True:
+            return " "+self.name[1].upper()+" "
+        else:
+            return " "+self.name[1].lower()+" "
         
 
     def getPossibleMoves(self,cordsX,cordsY):

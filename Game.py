@@ -57,7 +57,7 @@ def showMovesFromSpecificPlace(cords):
 
 
 setBoard()
-ChessBoard.putThePieceDown(King("king",False),[3,1])
+
 print(ChessBoard())
 
 # print()
