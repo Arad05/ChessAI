@@ -11,7 +11,7 @@ class ChessBoard:
 
 
     @staticmethod
-    def setBoard():
+    def makeBoard():
         # Label the top row with A-H
         for i in range(1, len(ChessBoard.board[0])):
             ChessBoard.board[0][i] = " "+chr(ord('A') + i - 1) + " "

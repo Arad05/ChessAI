@@ -9,7 +9,7 @@ from King import King
 
 
 def setBoard():
-    ChessBoard.setBoard()
+    ChessBoard.makeBoard()
     # Put the white pawns
     for i in range(1, len(ChessBoard.board[2])):
         ChessBoard.putThePieceDown(Pawn("pawn", True), [2, i])
