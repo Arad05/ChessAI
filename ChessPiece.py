@@ -6,7 +6,8 @@ class ChessPiece(ABC):
     def __init__(self,name,white):
         self.name =name
         self.white = white
-
+    
+    @abstractmethod
     def __str__(self):
         if self.white == True:
             return " "+self.name[0].upper()+" "
@@ -15,5 +16,5 @@ class ChessPiece(ABC):
 
 
     @abstractmethod
-    def possibleMoves(self):
+    def getPossibleMoves(self):
         pass

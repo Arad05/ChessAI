@@ -10,6 +10,6 @@ class King(ChessPiece):
         return super().__str__()
         
 
-    def possibleMoves(self,cordsX,cordsY):
+    def getPossibleMoves(self,cordsX,cordsY):
         ret = []
         return ret

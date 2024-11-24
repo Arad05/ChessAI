@@ -2,6 +2,13 @@ class ChessBoard:
     # Class-level board definition
     board = [[" " for _ in range(9)] for _ in range(9)]
 
+    @staticmethod
+    class null:
+        
+        @staticmethod
+        def __str__():  # Added colon here
+            return " . "
+
 
     @staticmethod
     def setBoard():
@@ -14,7 +21,7 @@ class ChessBoard:
         # Put dots as blank spaces
         for i in range(1, len(ChessBoard.board)):
             for j in range(1, len(ChessBoard.board[i])):
-                ChessBoard.board[i][j] = " . "
+                ChessBoard.board[i][j] = ChessBoard.null()
 
 
     @staticmethod
@@ -51,5 +58,5 @@ class ChessBoard:
                 ret+=str(place)
             ret+="\n"
         return ret+"\n"
-
+    
 

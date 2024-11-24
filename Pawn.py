@@ -5,19 +5,61 @@ class Pawn(ChessPiece):
     
     def __init__(self,name,white):
         super().__init__(name, white)
-        counter =0
+        self.counter =0
     
     def __str__(self):
         return super().__str__()
         
 
-    def possibleMoves(self,cordsX,cordsY):
+    def getPossibleMoves(self,cordsX,cordsY):
+
         ret = []
-        # Normal moves for white
-        if self.white:
-            if self.countre ==0:
-                if ChessBoard.board[cordsX][cordsY+2] == " . ":
-                    ret.append((ord(cordsX+64),cordsY+2))
-            if ChessBoard.board[cordsX][cordsY+1] == " . ":
-                ret.append((ord(cordsX+64),cordsY+1))
+
+        # Moves for white
+
+        if self.white: 
+            
+            if str(ChessBoard.board[cordsX+1][cordsY]) == str(ChessBoard.null()):
+                ret.append(((cordsX+1),chr(cordsY+64)))
+                # If first move
+                if self.counter ==0:
+                    if str(ChessBoard.board[cordsX+2][cordsY]) == str(ChessBoard.null()):
+                        ret.append(((cordsX+2),chr(cordsY+64)))
+            #
+            #  Eating right
+            if not(str(ChessBoard.board[cordsX+1][cordsY+1]) == str(ChessBoard.null())):
+                if ChessBoard.board[cordsX+1][cordsY+1].white == False:
+                    ret.append(((cordsX+1),chr(cordsY+64+1)))
+            
+            # Eating right
+            if not(str(ChessBoard.board[cordsX+1][cordsY-1]) == str(ChessBoard.null())):
+                if ChessBoard.board[cordsX+1][cordsY-1].white == False:
+                    ret.append(((cordsX+1),chr(cordsY+64-1)))
+            # En pesent
+ 
+            # if str(ChessBoard.board[cordsX][cordsY-1]) == str(Pawn()):
+            #     if ChessBoard.board[cordsX][cordsY-1].white == False:
+            #         if ChessBoard.board[cordsX][cordsY-1].count == 1:
+            #             ret.append(((cordsX+1),chr(cordsY+64-1)))
+                
+
+        # Moves for black
+        else:
+            if str(ChessBoard.board[cordsX-1][cordsY]) == str(ChessBoard.null()):
+                ret.append(((cordsX-1),chr(cordsY+64)))
+                # If first move
+                if self.counter ==0:
+                    if str(ChessBoard.board[cordsX-2][cordsY]) == str(ChessBoard.null()):
+                        ret.append(((cordsX-2),chr(cordsY+64)))
+            
+            #  Eating right
+            if not(str(ChessBoard.board[cordsX-1][cordsY+1]) == str(ChessBoard.null())):
+                if ChessBoard.board[cordsX-1][cordsY+1].white == False:
+                    ret.append(((cordsX-1),chr(cordsY+64+1)))
+            
+            # Eating right
+            if not(str(ChessBoard.board[cordsX-1][cordsY-1]) == str(ChessBoard.null())):
+                if ChessBoard.board[cordsX-1][cordsY-1].white == False:
+                    ret.append(((cordsX-1),chr(cordsY+64-1)))
+                    
         return ret
