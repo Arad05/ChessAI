@@ -55,13 +55,13 @@ def showMovesFromSpecificPlace(cords):
     return ChessBoard.board[row][col].getPossibleMoves(row,col)
      
 
-
-setBoard()
-
+# setBoard()
+ChessBoard.makeBoard()
+ChessBoard.putThePieceDown(Knight("Knight",False),[5,5])
 print(ChessBoard())
 
 # print()
-print(showMovesFromSpecificPlace("2B"))
+print(showMovesFromSpecificPlace("5e"))
 # def playGame():
 #     t=True
 #     while t :

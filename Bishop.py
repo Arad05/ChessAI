@@ -1,5 +1,6 @@
 from ChessPiece import ChessPiece
 from ChessBoard import ChessBoard
+from King import King
 
 class Bishop(ChessPiece):
 
