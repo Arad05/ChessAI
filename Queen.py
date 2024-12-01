@@ -13,4 +13,5 @@ class Queen(ChessPiece):
 
     def getPossibleMoves(self,cordsX,cordsY):
         ret = []
+        
         return ret

@@ -5,6 +5,7 @@ from Knight import Knight
 from Bishop import Bishop
 from Queen import Queen
 from King import King
+from ChessPiece import ChessPiece
 
 
 
@@ -52,12 +53,18 @@ def setBoard():
 def showMovesFromSpecificPlace(cords):
     row = int(cords[0])  # Convert the row number from string to integer
     col = ord(cords[1].upper()) - 64  # Convert column letter to index
-    return ChessBoard.board[row][col].getPossibleMoves(row,col)
+    
+    piece = ChessBoard.board[row][col]
+    
+    if isinstance(piece, ChessPiece):  # Check if it's a chess piece
+        return piece.getPossibleMoves(row, col)
+    else:
+        return f"There is not a chess piece in {row}{chr(col+64)}"
      
 
-# setBoard()
-ChessBoard.makeBoard()
-ChessBoard.putThePieceDown(Knight("Knight",False),[5,5])
+setBoard()
+ChessBoard.putThePieceDown(Rook("rook",True),[5,5])
+ChessBoard.putThePieceDown(Pawn("pawn",False),[5,6])
 print(ChessBoard())
 
 # print()

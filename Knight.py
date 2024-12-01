@@ -25,6 +25,7 @@ class Knight(ChessPiece):
                 (1, -2), (1, 2),
                 (2, -1), (2, 1)
             ]
+        # Moves for black
         else:
             moves = [
                 (2, -1), (2, 1), 
@@ -40,12 +41,12 @@ class Knight(ChessPiece):
             if 0 < new_x < 9 and 0 < new_y < 9:
                 # Check if square is empty
                 if str(ChessBoard.board[new_x][new_y]) == str(ChessBoard.null()):
-                    ret.append(("", new_x, new_y))
+                    ret.append(("", new_x, chr(new_y+64)))
                 else:
                     if not(ChessBoard.board[new_x][new_y].white == self.white):
                         if str(ChessBoard.board[new_x][new_y]) == str(King("king",False)) or str(ChessBoard.board[new_x][new_y]) == str(King("king",True)):
-                            ret.append(("+", new_x, new_y))
+                            ret.append(("+", new_x, chr(new_y+64)))
                         else:
-                            ret.append(("e", new_x, new_y))
+                            ret.append(("e", new_x, chr(new_y+64)))
 
         return ret
