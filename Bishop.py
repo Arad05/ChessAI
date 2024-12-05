@@ -13,7 +13,7 @@ class Bishop(ChessPiece):
 
     def getPossibleMoves(self,cordsX,cordsY):
         ret = []
-        for i in range(8):
-            if str(ChessBoard.board[new_x][new_y]) == str(ChessBoard.null()):
-
+        for i in range(1,8):
+            if str(ChessBoard.board[cordsX+i][cordsY+i]) == str(ChessBoard.null()):
+                ret.append("", cordsX+I, cordsY+i)
         return ret
