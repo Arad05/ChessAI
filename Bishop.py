@@ -14,8 +14,10 @@ class Bishop(ChessPiece):
     def getPossibleMoves(self,cordsX,cordsY):
         ret = []
         for i in range(1,8):
-            if ChessBoard.board[cordsX+i][cordsY+i].white == self.white:
-                if str(ChessBoard.board[cordsX+i][cordsY+i]) == str(ChessBoard.null()):
+            if str(ChessBoard.board[cordsX+i][cordsY+i]) == str(ChessBoard.null()):
                 ret.append(("", cordsX+i, chr(cordsY+i+64)))
-                elif str(ChessBoard.board[cordsX+i][cordsY+i]) == str(ChessBoard.null()):
+            elif not(ChessBoard.board[cordsX+i][cordsY+i].white == self.white):
+                if str(ChessBoard.board[cordsX+i][cordsY+i]) == str(King(not(self.white))):
+                    ret.append(("e",cordsX+i, chr(cordsY+i+64)))
+                    
         return ret
