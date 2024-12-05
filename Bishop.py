@@ -14,5 +14,6 @@ class Bishop(ChessPiece):
     def getPossibleMoves(self,cordsX,cordsY):
         ret = []
         for i in range(8):
-            ret.append()
+            if str(ChessBoard.board[new_x][new_y]) == str(ChessBoard.null()):
+
         return ret
