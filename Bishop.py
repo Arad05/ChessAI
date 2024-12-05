@@ -16,4 +16,5 @@ class Bishop(ChessPiece):
         for i in range(1,8):
             if str(ChessBoard.board[cordsX+i][cordsY+i]) == str(ChessBoard.null()):
                 ret.append(("", cordsX+i, chr(cordsY+i+64)))
+                elif str(ChessBoard.board[cordsX+i][cordsY+i]) == str(ChessBoard.null()):
         return ret
