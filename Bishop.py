@@ -18,6 +18,8 @@ class Bishop(ChessPiece):
                 ret.append(("", cordsX+i, chr(cordsY+i+64)))
             elif not(ChessBoard.board[cordsX+i][cordsY+i].white == self.white):
                 if str(ChessBoard.board[cordsX+i][cordsY+i]) == str(King(not(self.white))):
+                    ret.append(("+",cordsX+i, chr(cordsY+i+64)))
+                else:
                     ret.append(("e",cordsX+i, chr(cordsY+i+64)))
                     
         return ret
