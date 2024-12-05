@@ -13,4 +13,6 @@ class Bishop(ChessPiece):
 
     def getPossibleMoves(self,cordsX,cordsY):
         ret = []
+        for i in range(8):
+            ret.append()
         return ret
