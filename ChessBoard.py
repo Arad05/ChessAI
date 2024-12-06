@@ -1,6 +1,7 @@
 class ChessBoard:
     # Class-level board definition
     board = [[" " for _ in range(9)] for _ in range(9)]
+    pieces = []
 
     @staticmethod
     class null:
@@ -27,9 +28,9 @@ class ChessBoard:
     @staticmethod
     def movePiece(rowXO, colYO, rowXN, colYN):
         # Convert board coordinates to indices
-        old_row = rowXO
+        old_row = int(rowXO)
         old_col = ord(colYO.upper()) - 64  # 'A' -> 1, 'B' -> 2, ...
-        new_row = rowXN
+        new_row = int(rowXN)
         new_col = ord(colYN.upper()) - 64
 
         # Validate indices
@@ -37,9 +38,16 @@ class ChessBoard:
             raise ValueError("Invalid move coordinates. Rows must be 1-8, and columns A-H.")
 
         # Perform the move
-        if not(ChessBoard.board[old_row][old_col]==" . "):
+        if not(ChessBoard.board[old_row][old_col]==str(ChessBoard.null())):
             ChessBoard.board[new_row][new_col] = ChessBoard.board[old_row][old_col]
-            ChessBoard.board[old_row][old_col] = ". "  # Empty the original square
+            ChessBoard.board[old_row][old_col] = str(ChessBoard.null())  # Empty the original square
+            for piece in ChessBoard.pieces:
+                
+                if not(piece[1][0] ==rowXO and chr(piece[1][1]+64) ==colYO[1].upper()):
+                    continue
+
+                piece[1]=[new_row,new_col]
+
 
     @staticmethod
     def putThePieceDown(piece, cords):
@@ -47,6 +55,7 @@ class ChessBoard:
         row = cords[0]
         col = cords[1] 
         ChessBoard.board[row][col] = piece
+        ChessBoard.pieces.append((piece,[row,col]))
 
 
     @staticmethod

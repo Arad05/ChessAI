@@ -13,58 +13,58 @@ class Rook(ChessPiece):
 
     def getPossibleMoves(self,cordsX,cordsY):
         ret = []
-
-
-        for up in range(8):
-            new_y= cordsY+up
-            if  0 < new_y < 9:
-                if str(ChessBoard.board[cordsX][new_y]) == str(ChessBoard.null()):
-                    ret.append(("", cordsX, chr(new_y+64)))
-                elif not(ChessBoard.board[cordsX][new_y].white == self.white):
-                    if str(ChessBoard.board[cordsX][new_y]) == str(King("king",False)) or str(ChessBoard.board[cordsX][new_y]) == str(King("king",True)):
-                        ret.append(("+", cordsX, chr(new_y+64)))
-                        break
+        up =True
+        down =True
+        left = True
+        right =True
+        for i in range(1,8):
+            if right:
+                if 0<cordsY+i<9: 
+                    if str(ChessBoard.board[cordsX][cordsY+i]) == str(ChessBoard.null()):
+                        ret.append(("", cordsX, chr(cordsY+i+64)))
+                    elif not(ChessBoard.board[cordsX][cordsY+i].white == self.white):
+                        if str(ChessBoard.board[cordsX][cordsY+i]) == str(King("king",not(self.white))):
+                            ret.append(("+",cordsX, chr(cordsY+i+64)))
+                        else:
+                            ret.append(("e",cordsX, chr(cordsY+i+64)))
+                        right = not right
                     else:
-                        ret.append(("e", cordsX, chr(new_y+64)))
-                        break
-
-        for down in range(8):
-            new_y= cordsY-down
-            if  0 < new_y < 9:
-                if str(ChessBoard.board[cordsX][new_y]) == str(ChessBoard.null()):
-                    ret.append(("", cordsX, chr(new_y+64)))
-                elif not(ChessBoard.board[cordsX][new_y].white == self.white):
-                    if str(ChessBoard.board[cordsX][new_y]) == str(King("king",False)) or str(ChessBoard.board[cordsX][new_y]) == str(King("king",True)):
-                        ret.append(("+", cordsX, chr(new_y+64)))
-                        break
+                        right = not right
+            if down:
+                if 0<cordsX+i<9: 
+                    if str(ChessBoard.board[cordsX+i][cordsY]) == str(ChessBoard.null()):
+                        ret.append(("", cordsX+i, chr(cordsY+64)))
+                    elif not(ChessBoard.board[cordsX+i][cordsY].white == self.white):
+                        if str(ChessBoard.board[cordsX+i][cordsY]) == str(King("king",not(self.white))):
+                            ret.append(("+",cordsX+i, chr(cordsY+64)))
+                        else:
+                            ret.append(("e",cordsX+i, chr(cordsY+64)))
+                        down = not down
                     else:
-                        ret.append(("e", cordsX, chr(new_y+64)))
-                        break
-
-        for add in range(8):
-            new_x= cordsY+add
-            if  0 < new_x < 9:
-                if str(ChessBoard.board[new_x][cordsY]) == str(ChessBoard.null()):
-                    ret.append(("", new_x, chr(cordsY+64)))
-                elif not(ChessBoard.board[new_x][cordsY].white == self.white):
-                    if str(ChessBoard.board[new_x][cordsY]) == str(King("king",False)) or str(ChessBoard.board[new_x][cordsY]) == str(King("king",True)):
-                        ret.append(("+", new_x, chr(cordsY+64)))
-                        break
+                        down = not down
+            if left:
+                if 0<cordsY-i<9: 
+                    if str(ChessBoard.board[cordsX][cordsY-i]) == str(ChessBoard.null()):
+                        ret.append(("", cordsX, chr(cordsY-i+64)))
+                    elif not(ChessBoard.board[cordsX][cordsY-i].white == self.white):
+                        if str(ChessBoard.board[cordsX][cordsY-i]) == str(King("king",not(self.white))):
+                            ret.append(("+",cordsX, chr(cordsY-i+64)))
+                        else:
+                            ret.append(("e",cordsX, chr(cordsY-i+64)))
+                        left = not left
                     else:
-                        ret.append(("e", new_x, chr(cordsY+64)))
-                        break
-
-        for down in range(8):
-            new_x= cordsY-down
-            if  0 < new_x < 9:
-                if str(ChessBoard.board[new_x][cordsY]) == str(ChessBoard.null()):
-                    ret.append(("", new_x, chr(cordsY+64)))
-                elif not(ChessBoard.board[new_x][cordsY].white == self.white):
-                    if str(ChessBoard.board[new_x][cordsY]) == str(King("king",False)) or str(ChessBoard.board[new_x][cordsY]) == str(King("king",True)):
-                        ret.append(("+", new_x, chr(cordsY+64)))
-                        break
+                        left = not left
+            if up:
+                if 0<cordsX-i<9: 
+                    if str(ChessBoard.board[cordsX-i][cordsY]) == str(ChessBoard.null()):
+                        ret.append(("", cordsX-i, chr(cordsY+64)))
+                    elif not(ChessBoard.board[cordsX-i][cordsY].white == self.white):
+                        if str(ChessBoard.board[cordsX-i][cordsY]) == str(King("king",not(self.white))):
+                            ret.append(("+",cordsX-i, chr(cordsY+64)))
+                        else:
+                            ret.append(("e",cordsX-i, chr(cordsY+64)))
+                        up = not up
                     else:
-                        ret.append(("e", new_x, chr(cordsY+64)))
-                        break
+                        up = not up
 
         return ret

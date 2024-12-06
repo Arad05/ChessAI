@@ -35,7 +35,9 @@ class King(ChessPiece):
                 # Check if square is empty
                 if str(ChessBoard.board[new_x][new_y]) == str(ChessBoard.null()):
                     ret.append(("", new_x, chr(new_y+64)))
-                else:
-                    if not(ChessBoard.board[new_x][new_y].white == self.white):
+                elif not(ChessBoard.board[new_x][new_y].white == self.white):
+                    if isinstance(ChessBoard.board[new_x][new_y], King):
+                        ret.append(("+", new_x, chr(new_y+64)))
+                    else:
                         ret.append(("e", new_x, chr(new_y+64)))
         return ret
