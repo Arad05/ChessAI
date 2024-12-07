@@ -43,7 +43,7 @@ class ChessBoard:
             ChessBoard.board[old_row][old_col] = str(ChessBoard.null())  # Empty the original square
             for piece in ChessBoard.pieces:
                 
-                if not(piece[1][0] ==rowXO and chr(piece[1][1]+64) ==colYO[1].upper()):
+                if not(piece[1][0] ==rowXO and chr(piece[1][1]+64) ==colYO.upper()):
                     continue
 
                 piece[1]=[new_row,new_col]
@@ -55,7 +55,7 @@ class ChessBoard:
         row = cords[0]
         col = cords[1] 
         ChessBoard.board[row][col] = piece
-        ChessBoard.pieces.append((piece,[row,col]))
+        ChessBoard.pieces.append([piece,[row,col]])
 
 
     @staticmethod

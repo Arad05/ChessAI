@@ -33,7 +33,7 @@ class Pawn(ChessPiece):
             if(0<cordsX+1<9 and 0<cordsY+1<9):
                 if not(str(ChessBoard.board[cordsX+1][cordsY+1]) == str(ChessBoard.null())):
                     if ChessBoard.board[cordsX+1][cordsY+1].white == False:
-                        if str(ChessBoard.board[cordsX+1][cordsY+1]) == str(King("king",False)):
+                        if isinstance(ChessBoard.board[cordsX+1][cordsY+1], King):
                             ret.append(("+",(cordsX+1),chr(cordsY+64+1)))
                         else:
                             ret.append(("e",(cordsX+1),chr(cordsY+64+1)))
@@ -42,7 +42,7 @@ class Pawn(ChessPiece):
             if(0<cordsX+1<9 and 0<cordsY-1<9):
                 if not(str(ChessBoard.board[cordsX+1][cordsY-1]) == str(ChessBoard.null())):
                     if ChessBoard.board[cordsX+1][cordsY-1].white == False:
-                        if str(ChessBoard.board[cordsX+1][cordsY-1]) == str(King("king",False)):
+                        if isinstance(ChessBoard.board[cordsX-1][cordsY+1], King):
                             ret.append(("+",(cordsX+1),chr(cordsY+64-1)))
                         else:
                             ret.append(("e",(cordsX+1),chr(cordsY+64-1)))
@@ -67,7 +67,7 @@ class Pawn(ChessPiece):
             if(0<cordsX-1<9 and 0<cordsY+1<9):
                 if not(str(ChessBoard.board[cordsX-1][cordsY+1]) == str(ChessBoard.null())):
                     if ChessBoard.board[cordsX-1][cordsY+1].white == True:
-                        if str(ChessBoard.board[cordsX+1][cordsY+1]) == str(King("king",True)):
+                        if isinstance(ChessBoard.board[cordsX-1][cordsY+1], King):
                             ret.append(("+",(cordsX-1),chr(cordsY+64+1)))
                         else:
                             ret.append(("e",(cordsX-1),chr(cordsY+64+1)))
@@ -76,7 +76,7 @@ class Pawn(ChessPiece):
             if(0<cordsX-1<9 and 0<cordsY-1<9):
                 if not(str(ChessBoard.board[cordsX-1][cordsY-1]) == str(ChessBoard.null())):
                     if ChessBoard.board[cordsX-1][cordsY-1].white == True:
-                        if str(ChessBoard.board[cordsX+1][cordsY+1]) == str(King("king",True)):
+                        if isinstance(ChessBoard.board[cordsX-1][cordsY-1], King):
                             ret.append(("+",(cordsX-1),chr(cordsY+64-1)))
                         else:
                             ret.append(("e",(cordsX-1),chr(cordsY+64-1)))
