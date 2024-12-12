@@ -8,6 +8,7 @@ from King import King
 from ChessPiece import ChessPiece
 
 
+curentMove = 0
 
 def setBoard():
     ChessBoard.makeBoard()
@@ -90,51 +91,67 @@ def showWhoCanGetToASpecifcPlace(cords):
             ret.append((str(piece[0]),piece[1]))
     return ret            
 
-        
+def normalPieceMoves(piece,row, col):
+    for piece1 in ChessBoard.pieces:
 
-def move(oldCords,newCords):
-
-    canMove = True
-
-    for piece in ChessBoard.pieces:
-        
-        if not(piece[1][0] ==int(oldCords[0]) and chr(piece[1][1]+64) ==oldCords[1].upper()):
+        if piece1[0].white == piece.white:
             continue
+
+        for move in piece1[0].getPossibleMoves(*piece1[1]):
             
-        if  not((("", int(newCords[0]), newCords[1].upper()) in showMovesFromSpecificPlace([piece[1][0],chr(piece[1][1]+64)])) or 
-            (("e", int(newCords[0]), newCords[1].upper()) in showMovesFromSpecificPlace([piece[1][0],chr(piece[1][1]+64)])) or 
-            (("+", int(newCords[0]), newCords[1].upper()) in showMovesFromSpecificPlace([piece[1][0],chr(piece[1][1]+64)]))):            
-                print("Not possible move")
-                canMove=not canMove
-                break
+            if not(move[0] == "+"):
+                continue
 
-        piece[1][0] =int(newCords[0])
-        piece[1][1] = ord(newCords[1].upper())-64
+            return []
+    if isinstance(piece, Pawn):
+        return pawnMoves(piece,row, col)
+        
+    return piece.getPossibleMoves(row, col)
 
-    if canMove:    
-        ChessBoard.movePiece(oldCords[0],oldCords[1],newCords[0],newCords[1])
 
-def printPiecesPlaces():
-    ret =[]
-    for piece in ChessBoard.pieces:
-        ret.append((str(piece[0]),piece[1]))
+#need fixing
+def pawnMoves(piece,row, col):
+    ret = piece.getPossibleMoves(row, col)
+    global curentMove
+
+    if piece.counter == 0:
+        piece.counter =curentMove
+
+    
+    if isinstance(ChessBoard.board[row][col-1] ,Pawn):
+        if piece.white:
+            if col -1 >0:
+                if not(ChessBoard.board[row][col-1].white==piece.white):
+                    if ChessBoard.board[row][col-1].counter == curentMove-1:
+                        ret.append(("e",(row+1),chr(col+64-1)))
+                        ChessBoard.deleteThePiece([row,col-1])
+        else:
+            if col -1 >0:
+                if not(ChessBoard.board[row][col-1].white==piece.white):
+                    if ChessBoard.board[row][col-1].counter == curentMove-1:
+                        ret.append(("e",(row-1),chr(col+64-1)))
+                        ChessBoard.deleteThePiece([row,col-1])
+
+    if isinstance(ChessBoard.board[row][col+1] ,Pawn):
+        if piece.white:
+            if col +1 <9:
+                if not(ChessBoard.board[row][col+1].white==piece.white):
+                    if ChessBoard.board[row][col+1].counter == curentMove-1:
+                        ret.append(("e",(row+1),chr(col+64+1)))
+                        ChessBoard.deleteThePiece([row,col+1])
+        else:
+            if col +1 <9:
+                if not(ChessBoard.board[row][col+1].white==piece.white):
+                    if ChessBoard.board[row][col+1].counter == curentMove-1:
+                        ret.append(("e",(row-1),chr(col+64+1)))
+                        ChessBoard.deleteThePiece([row,col+1])
+
+
+    
     return ret
 
 
-def showMovesFromSpecificPlace(cords):
-    row = int(cords[0])  # Convert the row number from string to integer
-    col = ord(cords[1].upper()) - 64  # Convert column letter to index
-    
-    if not (0 < row < 9 and 0 < col < 9):
-        return "Place not in board"
-    piece = ChessBoard.board[row][col]
-
-    if not isinstance(piece, ChessPiece):  # Check if it's a chess piece
-        return f"There is not a chess piece in {row}{chr(col + 64)}"
-    
-    if not isinstance(piece, King):
-        return piece.getPossibleMoves(row, col)
-    
+def kingMoves(piece,cords,row, col):
     possibleKingMoves = piece.getPossibleMoves(row, col)
     new_possibleKingMoves = []
     for move in possibleKingMoves:
@@ -175,22 +192,78 @@ def showMovesFromSpecificPlace(cords):
     
     return new_possibleKingMoves
 
+def move(oldCords,newCords):
+
+    global curentMove
+
+
+    canMove = True
+
+    for piece in ChessBoard.pieces:
+        
+        if not(piece[1][0] ==int(oldCords[0]) and chr(piece[1][1]+64) ==oldCords[1].upper()):
+            continue
+            
+        if  not((("", int(newCords[0]), newCords[1].upper()) in showMovesFromSpecificPlace([piece[1][0],chr(piece[1][1]+64)])) or 
+            (("e", int(newCords[0]), newCords[1].upper()) in showMovesFromSpecificPlace([piece[1][0],chr(piece[1][1]+64)])) or 
+            (("+", int(newCords[0]), newCords[1].upper()) in showMovesFromSpecificPlace([piece[1][0],chr(piece[1][1]+64)]))):            
+                print("Not possible move")
+                canMove=not canMove
+                break
+
+        piece[1][0] =int(newCords[0])
+        piece[1][1] = ord(newCords[1].upper())-64
+
+    if canMove:    
+        ChessBoard.movePiece(oldCords[0],oldCords[1],newCords[0],newCords[1])
+
+    curentMove +=1
+
+def printPiecesPlaces():
+    ret =[]
+    for piece in ChessBoard.pieces:
+        ret.append((str(piece[0]),piece[1]))
+    return ret
+
+
+
+def showMovesFromSpecificPlace(cords):
+    row = int(cords[0])  # Convert the row number from string to integer
+    col = ord(cords[1].upper()) - 64  # Convert column letter to index
+    
+    if not (0 < row < 9 and 0 < col < 9):
+        return "Place not in board"
+    piece = ChessBoard.board[row][col]
+
+    if not isinstance(piece, ChessPiece):  # Check if it's a chess piece
+        return f"There is not a chess piece in {row}{chr(col + 64)}"
+    
+    if not isinstance(piece, King):
+        return normalPieceMoves(piece, row, col)
+    
+    return kingMoves(piece,cords,row, col)
+
+
 
 setBoard()
 
-ChessBoard.putThePieceDown(King("king",True),[5,5])
+ChessBoard.putThePieceDown(Pawn("p",True),[5,5])
 
 
 
-ChessBoard.putThePieceDown(Rook("r",False),[4,1])
+print(showMovesFromSpecificPlace("5e"))
+move("7d","5d")
+
+
+
 
 # ChessBoard.putThePieceDown(King("king",False),[5,7])
 
 
 print(ChessBoard())
 
+move("5e","6d")
 
-move("5e","6f")
 
 print(ChessBoard())
 

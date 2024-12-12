@@ -46,12 +46,7 @@ class Pawn(ChessPiece):
                             ret.append(("+",(cordsX+1),chr(cordsY+64-1)))
                         else:
                             ret.append(("e",(cordsX+1),chr(cordsY+64-1)))
-            # En pesent
- 
-            # if str(ChessBoard.board[cordsX][cordsY-1]) == str(Pawn()):
-            #     if ChessBoard.board[cordsX][cordsY-1].white == False:
-            #         if ChessBoard.board[cordsX][cordsY-1].count == 1:
-            #             ret.append(((cordsX+1),chr(cordsY+64-1)))
+
                 
 
         # Moves for black

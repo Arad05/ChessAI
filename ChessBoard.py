@@ -57,6 +57,15 @@ class ChessBoard:
         ChessBoard.board[row][col] = piece
         ChessBoard.pieces.append([piece,[row,col]])
 
+    @staticmethod
+    def deleteThePiece(cords):
+        # `cords` should be a tuple (row, column) 
+        row = cords[0]
+        col = cords[1] 
+        ChessBoard.pieces.remove([ChessBoard.board[row][col],[row,col]])
+        ChessBoard.board[row][col] = ChessBoard.null()
+        
+
 
     @staticmethod
     def __str__():
