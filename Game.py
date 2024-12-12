@@ -124,13 +124,11 @@ def pawnMoves(piece,row, col):
                 if not(ChessBoard.board[row][col-1].white==piece.white):
                     if ChessBoard.board[row][col-1].counter == curentMove-1:
                         ret.append(("e",(row+1),chr(col+64-1)))
-                        ChessBoard.deleteThePiece([row,col-1])
         else:
             if col -1 >0:
                 if not(ChessBoard.board[row][col-1].white==piece.white):
                     if ChessBoard.board[row][col-1].counter == curentMove-1:
                         ret.append(("e",(row-1),chr(col+64-1)))
-                        ChessBoard.deleteThePiece([row,col-1])
 
     if isinstance(ChessBoard.board[row][col+1] ,Pawn):
         if piece.white:
@@ -138,13 +136,11 @@ def pawnMoves(piece,row, col):
                 if not(ChessBoard.board[row][col+1].white==piece.white):
                     if ChessBoard.board[row][col+1].counter == curentMove-1:
                         ret.append(("e",(row+1),chr(col+64+1)))
-                        ChessBoard.deleteThePiece([row,col+1])
         else:
             if col +1 <9:
                 if not(ChessBoard.board[row][col+1].white==piece.white):
                     if ChessBoard.board[row][col+1].counter == curentMove-1:
                         ret.append(("e",(row-1),chr(col+64+1)))
-                        ChessBoard.deleteThePiece([row,col+1])
 
 
     
