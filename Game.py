@@ -104,13 +104,17 @@ def normalPieceMoves(piece,row, col):
 
             return []
     if isinstance(piece, Pawn):
-        return pawnMoves(piece,row, col)
+        return pawnMoves(piece,row, col)[0]
         
     return piece.getPossibleMoves(row, col)
 
 
-#need fixing
+
 def pawnMoves(piece,row, col):
+
+
+
+    enPesent = []
     ret = piece.getPossibleMoves(row, col)
     global curentMove
 
@@ -118,33 +122,29 @@ def pawnMoves(piece,row, col):
         piece.counter =curentMove
 
     
-    if isinstance(ChessBoard.board[row][col-1] ,Pawn):
+    if col -1 >0 and isinstance(ChessBoard.board[row][col-1] ,Pawn):
         if piece.white:
-            if col -1 >0:
-                if not(ChessBoard.board[row][col-1].white==piece.white):
-                    if ChessBoard.board[row][col-1].counter == curentMove-1:
-                        ret.append(("e",(row+1),chr(col+64-1)))
+            if not(ChessBoard.board[row][col-1].white==piece.white) and ChessBoard.board[row][col-1].counter == curentMove-1 :
+                ret.append(("e",(row+1),chr(col+64-1)))
+                enPesent.append(("e",(row+1),chr(col+64-1)))
         else:
-            if col -1 >0:
-                if not(ChessBoard.board[row][col-1].white==piece.white):
-                    if ChessBoard.board[row][col-1].counter == curentMove-1:
-                        ret.append(("e",(row-1),chr(col+64-1)))
+            if not(ChessBoard.board[row][col-1].white==piece.white) and ChessBoard.board[row][col-1].counter == curentMove-1 :
+                ret.append(("e",(row-1),chr(col+64-1)))
+                enPesent.append(("e",(row-1),chr(col+64-1)))
 
-    if isinstance(ChessBoard.board[row][col+1] ,Pawn):
+    if col +1 <9 and isinstance(ChessBoard.board[row][col+1] ,Pawn):
         if piece.white:
-            if col +1 <9:
-                if not(ChessBoard.board[row][col+1].white==piece.white):
-                    if ChessBoard.board[row][col+1].counter == curentMove-1:
-                        ret.append(("e",(row+1),chr(col+64+1)))
+            if not(ChessBoard.board[row][col+1].white==piece.white) and ChessBoard.board[row][col+1].counter == curentMove-1 :
+                ret.append(("e",(row+1),chr(col+64+1)))
+                enPesent.append(("e",(row+1),chr(col+64+1)))
         else:
-            if col +1 <9:
-                if not(ChessBoard.board[row][col+1].white==piece.white):
-                    if ChessBoard.board[row][col+1].counter == curentMove-1:
-                        ret.append(("e",(row-1),chr(col+64+1)))
+            if not(ChessBoard.board[row][col+1].white==piece.white) and ChessBoard.board[row][col+1].counter == curentMove-1 :
+                ret.append(("e",(row-1),chr(col+64+1)))
+                enPesent.append(("e",(row-1),chr(col+64+1)))
 
 
     
-    return ret
+    return [ret,enPesent]
 
 
 def kingMoves(piece,cords,row, col):
@@ -206,11 +206,17 @@ def move(oldCords,newCords):
                 print("Not possible move")
                 canMove=not canMove
                 break
-
+        
         piece[1][0] =int(newCords[0])
         piece[1][1] = ord(newCords[1].upper())-64
 
     if canMove:    
+        if isinstance(ChessBoard.board[int(oldCords[0])][ord(oldCords[1].upper())-64] ,Pawn):
+            if ("e",int(newCords[0]),newCords[1].upper()) in pawnMoves(ChessBoard.board[int(oldCords[0])][ord(oldCords[1].upper())-64],int(oldCords[0]),ord(oldCords[1].upper())-64)[1]:
+                if ChessBoard.board[int(oldCords[0])][ord(oldCords[1].upper())-64].white:
+                    ChessBoard.deleteThePiece(((int(newCords[0])-1),newCords[1]))
+                else:
+                    ChessBoard.deleteThePiece((newCords[0]+1,newCords[1]))
         ChessBoard.movePiece(oldCords[0],oldCords[1],newCords[0],newCords[1])
 
     curentMove +=1
@@ -243,22 +249,18 @@ def showMovesFromSpecificPlace(cords):
 
 setBoard()
 
+
+
 ChessBoard.putThePieceDown(Pawn("p",True),[5,5])
-
-
-
-print(showMovesFromSpecificPlace("5e"))
-move("7d","5d")
-
-
-
-
-# ChessBoard.putThePieceDown(King("king",False),[5,7])
 
 
 print(ChessBoard())
 
-move("5e","6d")
+move("7f","5f")
+
+print(ChessBoard())
+
+move("5e","6f")
 
 
 print(ChessBoard())

@@ -59,9 +59,9 @@ class ChessBoard:
 
     @staticmethod
     def deleteThePiece(cords):
-        # `cords` should be a tuple (row, column) 
-        row = cords[0]
-        col = cords[1] 
+        # `cords` should be a tuple (row, column)  
+        row = int(cords[0])
+        col = ord(cords[1].upper())  -64
         ChessBoard.pieces.remove([ChessBoard.board[row][col],[row,col]])
         ChessBoard.board[row][col] = ChessBoard.null()
         
