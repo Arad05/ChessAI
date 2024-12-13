@@ -104,13 +104,18 @@ def normalPieceMoves(piece,row, col):
 
             return []
     if isinstance(piece, Pawn):
-        return pawnMoves(piece,row, col)[0]
+        return enPesent(piece,row, col)[0]
         
     return piece.getPossibleMoves(row, col)
 
 
 
-def pawnMoves(piece,row, col):
+def castling(row, col):
+    pass
+
+
+
+def enPesent(piece,row, col):
 
 
 
@@ -155,8 +160,12 @@ def kingMoves(piece,cords,row, col):
 
         
     lMove = [cords[0],cords[1]]
-    board =ChessBoard.board
+    board = [[" " for _ in range(9)] for _ in range(9)]
+    for i in range(len(board)):
+        for j in range(len(board[i])):
+            board[i][j]=ChessBoard.board[i][j]
 
+    
 
     for possibleMove in possibleKingMoves:
 
@@ -179,12 +188,11 @@ def kingMoves(piece,cords,row, col):
                 new_possibleKingMoves.remove(possibleMove)
 
             
-        lMove = [possibleMove[1],possibleMove[2]]
 
-            
-        ChessBoard.board=board
-
-    ChessBoard.movePiece(lMove[0],lMove[1],cords[0],cords[1])
+        ChessBoard.movePiece(possibleMove[1],possibleMove[2],lMove[0],lMove[1])
+        ChessBoard.setBoardToAnExistingBoard(board)
+        
+    print (ChessBoard())
     
     return new_possibleKingMoves
 
@@ -199,7 +207,8 @@ def move(oldCords,newCords):
         
         if not(piece[1][0] ==int(oldCords[0]) and chr(piece[1][1]+64) ==oldCords[1].upper()):
             continue
-            
+        
+
         if  not((("", int(newCords[0]), newCords[1].upper()) in showMovesFromSpecificPlace([piece[1][0],chr(piece[1][1]+64)])) or 
             (("e", int(newCords[0]), newCords[1].upper()) in showMovesFromSpecificPlace([piece[1][0],chr(piece[1][1]+64)])) or 
             (("+", int(newCords[0]), newCords[1].upper()) in showMovesFromSpecificPlace([piece[1][0],chr(piece[1][1]+64)]))):            
@@ -210,9 +219,10 @@ def move(oldCords,newCords):
         piece[1][0] =int(newCords[0])
         piece[1][1] = ord(newCords[1].upper())-64
 
-    if canMove:    
+    if canMove:  
         if isinstance(ChessBoard.board[int(oldCords[0])][ord(oldCords[1].upper())-64] ,Pawn):
-            if ("e",int(newCords[0]),newCords[1].upper()) in pawnMoves(ChessBoard.board[int(oldCords[0])][ord(oldCords[1].upper())-64],int(oldCords[0]),ord(oldCords[1].upper())-64)[1]:
+            if ("e",int(newCords[0]),newCords[1].upper()) in enPesent(ChessBoard.board[int(oldCords[0])][ord(oldCords[1].upper())-64],int(oldCords[0]),ord(oldCords[1].upper())-64)[1]:
+                print(ChessBoard.board[int(oldCords[0])][ord(oldCords[1].upper())-64])
                 if ChessBoard.board[int(oldCords[0])][ord(oldCords[1].upper())-64].white:
                     ChessBoard.deleteThePiece(((int(newCords[0])-1),newCords[1]))
                 else:
@@ -249,21 +259,21 @@ def showMovesFromSpecificPlace(cords):
 
 setBoard()
 
+print(ChessBoard())
+
+ChessBoard.putThePieceDown(King("k",True),[5,5])
+
+ChessBoard.putThePieceDown(King("k",False),[5,7])
 
 
-ChessBoard.putThePieceDown(Pawn("p",True),[5,5])
+ChessBoard.putThePieceDown(Rook("r",False),[5,6])
 
+move("5e","5f")
 
 print(ChessBoard())
 
-move("7f","5f")
-
-print(ChessBoard())
-
-move("5e","6f")
 
 
-print(ChessBoard())
 
 
 # def playGame():

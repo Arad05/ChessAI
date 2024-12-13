@@ -77,4 +77,11 @@ class ChessBoard:
             ret+="\n"
         return ret+"\n"
     
+    @staticmethod
+    def setBoardToAnExistingBoard(board):
+        for i in range(len(board)):
+            for j in range(len(board[i])):
+                ChessBoard.board[i][j]=board[i][j]
+
+    
 
