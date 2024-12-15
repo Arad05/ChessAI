@@ -40,7 +40,7 @@ class ChessBoard:
         # Perform the move
         if not(ChessBoard.board[old_row][old_col]==str(ChessBoard.null())):
             ChessBoard.board[new_row][new_col] = ChessBoard.board[old_row][old_col]
-            ChessBoard.board[old_row][old_col] = str(ChessBoard.null())  # Empty the original square
+            ChessBoard.board[old_row][old_col] = ChessBoard.null()  # Empty the original square
             for piece in ChessBoard.pieces:
                 
                 if not(piece[1][0] ==rowXO and chr(piece[1][1]+64) ==colYO.upper()):

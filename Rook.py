@@ -6,7 +6,9 @@ class Rook(ChessPiece):
 
     def __init__(self,name,white):
         super().__init__(name, white)
-    
+        self.moved =False
+
+
     def __str__(self):
         return super().__str__()
         
