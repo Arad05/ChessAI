@@ -443,7 +443,7 @@ def playGame():
 
         for piece in ChessBoard.pieces:
             if not(piece[0].white ==white):
-                if not(piece[0].getPossibleMoves(piece[1][0].piece[1][1]) == []):
+                if not(piece[0].getPossibleMoves(piece[1][0],piece[1][1]) == []):
                     won = False
 
         if won:
