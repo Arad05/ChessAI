@@ -420,38 +420,59 @@ def playGame():
     white =True
     t=True
     while t :
-        won =True
-        if white:
-            print("White turn")
-            
-        else:
-            print("Black turn")
-            
-        print(ChessBoard())
-        first_choice = input("Where do you want to go from?")
-        second_choice = input("Where do you to go ?")
-        for piece in ChessBoard.pieces:
-            if not(piece[1][0] ==int(first_choice[0]) and chr(piece[1][1]+64) ==first_choice[1].upper()):
-                continue
+        choice = input("What do you want to do?")
 
-            if not piece[0].white == white:
-                print("You moved the wrong piece color")
+        choice.lower()
+        choice[0].upper()
+
+        match choice:
+
+            case "Help":
+                print("Show moves from specific place - Possible_moves")
+                print("Move piece - Move")
                 break
+            
+            case "Possible_moves":
+                row =input("Witch row the piece in?")
+                colom =input("Witch colom the piece in?")
+                ret = row+colom
+                print(showMovesFromSpecificPlace(ret))
 
-            white = not white
-            move(first_choice,second_choice)
+            case "Move":
 
-        for piece in ChessBoard.pieces:
-            if not(piece[0].white ==white):
-                if not(piece[0].getPossibleMoves(piece[1][0],piece[1][1]) == []):
-                    won = False
+                won =True
+                if white:
+                    print("White turn")
+                    
+                else:
+                    print("Black turn")
+                    
+                print(ChessBoard())
+                first_choice = input("Where do you want to go from?")
+                second_choice = input("Where do you to go ?")
+                for piece in ChessBoard.pieces:
+                    if not(piece[1][0] ==int(first_choice[0]) and chr(piece[1][1]+64) ==first_choice[1].upper()):
+                        continue
 
-        if won:
-            if white:
-                print("White won")
-            else:
-                print("Black won")
-            break
+                    if not piece[0].white == white:
+                        print("You moved the wrong piece color")
+                        break
+
+                    white = not white
+                    move(first_choice,second_choice)
+
+                for piece in ChessBoard.pieces:
+                    if not(piece[0].white ==white):
+                        if not(piece[0].getPossibleMoves(piece[1][0],piece[1][1]) == []):
+                            won = False
+
+                if won:
+                    if white:
+                        print("White won")
+                    else:
+                        print("Black won")
+                    break
+
 
                     
 
