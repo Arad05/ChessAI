@@ -358,7 +358,10 @@ def move(oldCords,newCords):
         piece[1][1] = ord(newCords[1].upper())-64
 
     if canMove: 
-
+        if isinstance(ChessBoard.board[int(oldCords[0])][ord(oldCords[1].upper())-64] ,ChessPiece):
+            if (("e", int(newCords[0]), newCords[1].upper()) in showMovesFromSpecificPlace([piece[1][0],chr(piece[1][1]+64)])) and isinstance(ChessBoard.board[int(newCords[0])][ord(newCords[1].upper())-64] ,ChessPiece):
+                if not ChessBoard.board[int(newCords[0])][ord(newCords[1].upper())-64].white == ChessBoard.board[int(oldCords[0])][ord(oldCords[1].upper())-64].white:
+                    ChessBoard.deleteThePiece(((int(newCords[0])),newCords[1]))
         if isinstance(ChessBoard.board[int(oldCords[0])][ord(oldCords[1].upper())-64] ,Pawn):
             if ("e",int(newCords[0]),newCords[1].upper()) in enPesent(ChessBoard.board[int(oldCords[0])][ord(oldCords[1].upper())-64],int(oldCords[0]),ord(oldCords[1].upper())-64)[1]:
                 print(ChessBoard.board[int(oldCords[0])][ord(oldCords[1].upper())-64])
@@ -411,8 +414,19 @@ def showMovesFromSpecificPlace(cords):
 setBoard()
 
 
+# print(ChessBoard())
 
+# move("2c","4c")
 
+# print(ChessBoard())
+
+# move("7d","5d")
+
+# print(ChessBoard())
+
+# move("4c","5d")
+
+# print(ChessBoard())
 
 def playGame():
     setBoard()
@@ -420,17 +434,18 @@ def playGame():
     white =True
     t=True
     while t :
+
         choice = input("What do you want to do?")
 
-        choice.lower()
-        choice[0].upper()
+        choice = choice[0].upper() + choice[1::].lower()
 
+        print(ChessBoard())
         match choice:
 
             case "Help":
                 print("Show moves from specific place - Possible_moves")
                 print("Move piece - Move")
-                break
+                
             
             case "Possible_moves":
                 row =input("Witch row the piece in?")
@@ -447,7 +462,7 @@ def playGame():
                 else:
                     print("Black turn")
                     
-                print(ChessBoard())
+                
                 first_choice = input("Where do you want to go from?")
                 second_choice = input("Where do you to go ?")
                 for piece in ChessBoard.pieces:
@@ -471,10 +486,4 @@ def playGame():
                         print("White won")
                     else:
                         print("Black won")
-                    break
-
-
                     
-
-        
-        
