@@ -56,6 +56,7 @@ class ChessBoard:
         col = cords[1] 
         ChessBoard.board[row][col] = piece
         ChessBoard.pieces.append([piece,[row,col]])
+        
 
     @staticmethod
     def deleteThePiece(cords):

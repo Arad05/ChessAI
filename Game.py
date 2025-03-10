@@ -350,9 +350,8 @@ def move(oldCords,newCords):
             (("e", int(newCords[0]), newCords[1].upper()) in showMovesFromSpecificPlace([piece[1][0],chr(piece[1][1]+64)])) or 
             (("c", int(newCords[0]), newCords[1].upper()) in showMovesFromSpecificPlace([piece[1][0],chr(piece[1][1]+64)])) or 
             (("+", int(newCords[0]), newCords[1].upper()) in showMovesFromSpecificPlace([piece[1][0],chr(piece[1][1]+64)]))):            
-                print("Not possible move")
                 canMove=not canMove
-                break
+                return (0)
         
         piece[1][0] =int(newCords[0])
         piece[1][1] = ord(newCords[1].upper())-64
@@ -384,6 +383,7 @@ def move(oldCords,newCords):
         ChessBoard.movePiece(oldCords[0],oldCords[1],newCords[0],newCords[1])
 
     curentMove +=1
+    return 1
 
 def printPiecesPlaces():
     ret =[]
@@ -409,9 +409,10 @@ def showMovesFromSpecificPlace(cords):
     
     return kingMoves(piece,cords,row, col)
 
+def displayBoard():
+    print(ChessBoard())
 
 
-setBoard()
 
 
 # print(ChessBoard())
@@ -436,8 +437,8 @@ def playGame():
     while t :
 
         choice = input("What do you want to do?")
-
-        choice = choice[0].upper() + choice[1::].lower()
+        if(len(choice)>0):
+            choice = choice[0].upper() + choice[1::].lower()
 
         print(ChessBoard())
         match choice:
@@ -473,9 +474,15 @@ def playGame():
                         print("You moved the wrong piece color")
                         break
 
-                    white = not white
-                    move(first_choice,second_choice)
-
+                    
+                    
+                    if not(move(first_choice,second_choice)==0):
+                        
+                        white = not white
+                    else:
+                        print("Not possible move")
+                        move(first_choice,second_choice)
+                        
                 for piece in ChessBoard.pieces:
                     if not(piece[0].white ==white):
                         if not(piece[0].getPossibleMoves(piece[1][0],piece[1][1]) == []):
@@ -486,4 +493,7 @@ def playGame():
                         print("White won")
                     else:
                         print("Black won")
-                    
+
+            case _:
+                print("stupid ass nigga I told you to chose somthing. You can ask for help by writing help")
+
