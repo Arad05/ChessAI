@@ -8,7 +8,7 @@ from King import King
 from ChessPiece import ChessPiece
 
 
-curentMove = 0
+curentMove = 1
 
 def setBoard():
     ChessBoard.makeBoard()
@@ -252,8 +252,6 @@ def enPesent(piece,row, col):
     ret = piece.getPossibleMoves(row, col)
     global curentMove
 
-    if piece.counter == 0:
-        piece.counter =curentMove
 
     
     if col -1 >0 and isinstance(ChessBoard.board[row][col-1] ,Pawn):
@@ -357,6 +355,9 @@ def move(oldCords,newCords):
         piece[1][1] = ord(newCords[1].upper())-64
 
     if canMove: 
+        if isinstance(ChessBoard.board[int(oldCords[0])][ord(oldCords[1].upper())-64] ,Pawn):
+                ChessBoard.board[int(oldCords[0])][ord(oldCords[1].upper())-64].counter = curentMove
+
         if isinstance(ChessBoard.board[int(oldCords[0])][ord(oldCords[1].upper())-64] ,ChessPiece):
             if (("e", int(newCords[0]), newCords[1].upper()) in showMovesFromSpecificPlace([piece[1][0],chr(piece[1][1]+64)])) and isinstance(ChessBoard.board[int(newCords[0])][ord(newCords[1].upper())-64] ,ChessPiece):
                 if not ChessBoard.board[int(newCords[0])][ord(newCords[1].upper())-64].white == ChessBoard.board[int(oldCords[0])][ord(oldCords[1].upper())-64].white:
@@ -381,6 +382,9 @@ def move(oldCords,newCords):
                 ChessBoard.movePiece(oldCords[0].upper(),"a",oldCords[0].upper(),"d")
 
         ChessBoard.movePiece(oldCords[0],oldCords[1],newCords[0],newCords[1])
+
+
+
 
     curentMove +=1
     return 1
@@ -411,6 +415,30 @@ def showMovesFromSpecificPlace(cords):
 
 def displayBoard():
     print(ChessBoard())
+
+def win(white):
+    for piece in ChessBoard.pieces:
+        
+        if piece[0].name == "king" and piece[0].white == white :
+            otherKing = piece
+            
+
+    otherKingCords = str(otherKing[1][0])+chr(otherKing[1][1]+64)
+
+    win = False
+
+    for piece in ChessBoard.pieces:
+        if not piece[0].white==white:
+            cords = str(piece[1][0])+chr(piece[1][1]+64)
+
+            if(not showMovesFromSpecificPlace(cords) == []):
+                if showMovesFromSpecificPlace(otherKingCords)==[]:
+                    for posiibleMove in showMovesFromSpecificPlace(cords):
+                        if posiibleMove[0]=="+":
+                            win = True
+
+    return win
+
 
 
 
@@ -456,7 +484,6 @@ def playGame():
 
             case "Move":
 
-                won =True
                 if white:
                     print("White turn")
                     
@@ -483,16 +510,15 @@ def playGame():
                         print("Not possible move")
                         move(first_choice,second_choice)
                         
-                for piece in ChessBoard.pieces:
-                    if not(piece[0].white ==white):
-                        if not(piece[0].getPossibleMoves(piece[1][0],piece[1][1]) == []):
-                            won = False
-
-                if won:
+                if win(white):
                     if white:
-                        print("White won")
+                        print("White win")
+                        t=False
+                        break
                     else:
-                        print("Black won")
+                        print("Black win")
+                        t=False
+                        break
 
             case _:
                 print("stupid ass nigga I told you to chose somthing. You can ask for help by writing help")
