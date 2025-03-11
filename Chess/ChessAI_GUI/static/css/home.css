@@ -93,13 +93,15 @@ header nav ul li a:hover {
 .button-content {
     display: flex;
     align-items: center;
+    justify-content: center;
 }
 
 .icon {
-    width: 30px;
-    height: 30px;
+    width: 50px !important;
+    height: 50px !important;
     margin-right: 15px;
 }
+
 
 /* Footer */
 footer {
@@ -131,4 +133,3 @@ footer a:hover {
     background-color: #444;
     border-color: #fff;
 }
-
