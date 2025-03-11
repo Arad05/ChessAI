@@ -2,6 +2,8 @@ from flask import Flask, render_template
 import os
 
 app = Flask(__name__, template_folder="ChessAI_GUI/templates", static_folder="ChessAI_GUI/static")
+print(os.path.join(os.getcwd(), "ChessAI_GUI/static"))
+
 
 @app.route('/')
 def home():
