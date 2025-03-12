@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChessAI - עמוד משחק אונליין</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/play_online.css') }}">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <ul>
+                    <li><a href="about.html">אודות</a></li>
+                    <li><a href="#">פרויקטים</a></li>
+                    <li><a href="#">כניסת משתמש</a></li>
+                    <li><a href="#">הרשמה</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main id="app">
+        <div class="title-container">
+            <h1 class="title">ChessAI - משחק אונליין</h1>
+        </div>
+
+        <div class="buttons-container">
+            <a href="/play_online" class="play-button" id="play-online" @mouseover="animateButton($event)" @mouseleave="resetButton($event)">
+                <span class="button-content">
+                    <img src="https://img.icons8.com/ios/50/000000/worldwide-location.png" alt="Online" class="icon">
+                    לשחק אונליין
+                </span>
+            </a>
+            <a href="/play_bot" class="play-button" id="play-bot" @mouseover="animateButton($event)" @mouseleave="resetButton($event)">
+                <span class="button-content">
+                    <img src="/static/Logos/chatbot.png" alt="Bot" class="icon">
+                    לשחק נגד בוט
+                </span>
+            </a>
+        </div>
+    </main>
+
+    <footer>
+        <a href="#" class="footer-link">כניסת משתמש</a>
+        <a href="#" class="footer-link">הרשמה</a>
+        <p>&copy; 2025 זכויות יוצרים</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/home.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/vue_home.js') }}" defer></script>
+</body>
+</html>
