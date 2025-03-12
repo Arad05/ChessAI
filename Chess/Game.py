@@ -8,7 +8,6 @@ from King import King
 from ChessPiece import ChessPiece
 
 
-curentMove = 0
 curentMove = 1
 
 def setBoard():
@@ -66,17 +65,17 @@ def setBoard():
     # Put the black king
     ChessBoard.putThePieceDown(King("king",False),[8,5])
 
+    
 
-
-
+     
 def showWhoCanGetToASpecifcPlace(cords):
     ret = []
     row = int(cords[0])  # Convert the row number from string to integer
     col = ord(cords[1].upper()) - 64  # Convert column letter to index
-
+    
     if not(0<row<9 and 0<col<9):
         return ret
-
+    
     for piece in ChessBoard.pieces:
 
         print(piece[0],piece[0].getPossibleMoves(piece[1][0],piece[1][1]))
@@ -88,7 +87,7 @@ def showWhoCanGetToASpecifcPlace(cords):
         elif str(ChessBoard.board[row][col]) == str(King("king", not(piece[0].white))) and ("+", int(row), chr(col+64)) in piece[0].getPossibleMoves(*piece[1]):
             ret.append((str(piece[0]),piece[1]))
         elif ("e", int(row), chr(col+64)) in piece[0].getPossibleMoves(piece[1][0],piece[1][1]):
-
+        
             ret.append((str(piece[0]),piece[1]))
     return ret            
 
@@ -99,16 +98,16 @@ def normalPieceMoves(piece,row, col):
             continue
 
         for move in piece1[0].getPossibleMoves(*piece1[1]):
-
+            
             if not(move[0] == "+"):
                 continue
 
             return []
-
+    
     if isinstance(piece, Pawn):
         return enPesent(piece,row, col)[0]
-
-
+    
+        
     return piece.getPossibleMoves(row, col)
 
 
@@ -130,7 +129,7 @@ def castling(piece, row, col):
 
                             if  isinstance(ChessBoard.board[row][col+num],Rook) or  isinstance(ChessBoard.board[row][col+num],ChessBoard.null) :
                                 if not isinstance(ChessBoard.board[row][col+num],ChessBoard.null) and not ChessBoard.board[row][col+num].moved:
-
+                            
                                     ChessBoard.movePiece("1","e","1","g")
                                     ChessBoard.movePiece("1","h","1","f")
                                     for piece1 in ChessBoard.pieces:
@@ -151,7 +150,7 @@ def castling(piece, row, col):
 
 
 
-
+                                
 
                         else:
                             r = not r
@@ -169,7 +168,7 @@ def castling(piece, row, col):
                                         if ("+", 1, chr(3+64)) in piece1[0].getPossibleMoves(piece1[1][0],piece1[1][1]) or ("e", 1, chr(4+64)) in piece1[0].getPossibleMoves(piece1[1][0],piece1[1][1]):
                                             add = not add
                                             break    
-
+                                    
                                     ChessBoard.movePiece("1","c","1","e")
                                     ChessBoard.movePiece("1","d","1","a")
 
@@ -181,14 +180,14 @@ def castling(piece, row, col):
                                 l = not l       
                         else:
                             l = not l
-
+                
             else:
                 for num in range(1,8):
                     if r:
                         if col+num<9:
 
                             add =True
-
+                            
                             if  isinstance(ChessBoard.board[row][col+num],Rook) or  isinstance(ChessBoard.board[row][col+num],ChessBoard.null) :
                                 if not isinstance(ChessBoard.board[row][col+num],ChessBoard.null) and not ChessBoard.board[row][col+num].moved:
 
@@ -209,7 +208,7 @@ def castling(piece, row, col):
                                         castling.append(("c", 8, chr(7+64)))
                             else:
                                 r = not r
-
+                                
 
                         else:
                             r = not r
@@ -244,7 +243,7 @@ def castling(piece, row, col):
 
         return [ret,castling]
 
-
+     
 
 
 
@@ -253,10 +252,8 @@ def enPesent(piece,row, col):
     ret = piece.getPossibleMoves(row, col)
     global curentMove
 
-    if piece.counter == 0:
-        piece.counter =curentMove
 
-
+    
     if col -1 >0 and isinstance(ChessBoard.board[row][col-1] ,Pawn):
         if piece.white:
             if not(ChessBoard.board[row][col-1].white==piece.white) and ChessBoard.board[row][col-1].counter == curentMove-1 :
@@ -278,7 +275,7 @@ def enPesent(piece,row, col):
                 enPesent.append(("e",(row-1),chr(col+64+1)))
 
 
-
+    
     return [ret,enPesent]
 
 
@@ -288,7 +285,7 @@ def kingMoves(piece,cords,row, col):
     for move in possibleKingMoves:
         new_possibleKingMoves.append(move)
 
-
+        
     lMove = [cords[0],cords[1]]
     board = [[" " for _ in range(9)] for _ in range(9)]
     for i in range(len(board)):
@@ -306,7 +303,7 @@ def kingMoves(piece,cords,row, col):
 
             if piece1[0].white == piece.white:
                 continue
-
+            
             if possibleMove not in new_possibleKingMoves:
                 continue
 
@@ -316,22 +313,22 @@ def kingMoves(piece,cords,row, col):
             if ("+",(possibleMove[1]),(possibleMove[2])) in piece1[0].getPossibleMoves(*piece1[1]):
                 new_possibleKingMoves.remove(possibleMove)
 
-
+            
 
         ChessBoard.movePiece(possibleMove[1],possibleMove[2],lMove[0],lMove[1])
         ChessBoard.setBoardToAnExistingBoard(board)
-
+        
     for cassMove in castling(piece, row, col)[0]:
         if cassMove not in possibleKingMoves:
             new_possibleKingMoves.append(cassMove)
 
-
+    
     return new_possibleKingMoves
 
 def move(oldCords,newCords):
 
     global curentMove
-
+    
 
     canMove = True
 
@@ -340,20 +337,20 @@ def move(oldCords,newCords):
         print(f"There is not a chess piece in {oldCords[0]}{oldCords[1]}")
 
     for piece in ChessBoard.pieces:
-
+        
         if not(piece[1][0] ==int(oldCords[0]) and chr(piece[1][1]+64) ==oldCords[1].upper()):
             continue
+        
 
-
-
-
+            
+        
         if  not((("", int(newCords[0]), newCords[1].upper()) in showMovesFromSpecificPlace([piece[1][0],chr(piece[1][1]+64)])) or 
             (("e", int(newCords[0]), newCords[1].upper()) in showMovesFromSpecificPlace([piece[1][0],chr(piece[1][1]+64)])) or 
             (("c", int(newCords[0]), newCords[1].upper()) in showMovesFromSpecificPlace([piece[1][0],chr(piece[1][1]+64)])) or 
             (("+", int(newCords[0]), newCords[1].upper()) in showMovesFromSpecificPlace([piece[1][0],chr(piece[1][1]+64)]))):            
                 canMove=not canMove
                 return (0)
-
+        
         piece[1][0] =int(newCords[0])
         piece[1][1] = ord(newCords[1].upper())-64
 
@@ -403,17 +400,17 @@ def printPiecesPlaces():
 def showMovesFromSpecificPlace(cords):
     row = int(cords[0])  # Convert the row number from string to integer
     col = ord(cords[1].upper()) - 64  # Convert column letter to index
-
+    
     if not (0 < row < 9 and 0 < col < 9):
         return "Place not in board"
     piece = ChessBoard.board[row][col]
 
     if not isinstance(piece, ChessPiece):  # Check if it's a chess piece
         return f"There is not a chess piece in {row}{chr(col + 64)}"
-
+    
     if not isinstance(piece, King):
         return normalPieceMoves(piece, row, col)
-
+    
     return kingMoves(piece,cords,row, col)
 
 def displayBoard():
@@ -477,8 +474,8 @@ def playGame():
             case "Help":
                 print("Show moves from specific place - Possible_moves")
                 print("Move piece - Move")
-
-
+                
+            
             case "Possible_moves":
                 row =input("Witch row the piece in?")
                 colom =input("Witch colom the piece in?")
@@ -487,14 +484,13 @@ def playGame():
 
             case "Move":
 
-                won =True
                 if white:
                     print("White turn")
-
+                    
                 else:
                     print("Black turn")
-
-
+                    
+                
                 first_choice = input("Where do you want to go from?")
                 second_choice = input("Where do you to go ?")
                 for piece in ChessBoard.pieces:
@@ -505,33 +501,24 @@ def playGame():
                         print("You moved the wrong piece color")
                         break
 
-
-
+                    
+                    
                     if not(move(first_choice,second_choice)==0):
-
+                        
                         white = not white
                     else:
                         print("Not possible move")
                         move(first_choice,second_choice)
-
-                for piece in ChessBoard.pieces:
-                    if not(piece[0].white ==white):
-                        if not(piece[0].getPossibleMoves(piece[1][0],piece[1][1]) == []):
-                            won = False
-
-                if won:
-                    if win(white):
-                        if white:
-                            print("White won")
-                            print("White win")
-                            t=False
-                            break
-                        else:
-                            print("Black won")
-                            print("Black win")
-                            t=False
-                            break
+                        
+                if win(white):
+                    if white:
+                        print("White win")
+                        t=False
+                        break
+                    else:
+                        print("Black win")
+                        t=False
+                        break
 
             case _:
                 print("stupid ass nigga I told you to chose somthing. You can ask for help by writing help")
-~
