@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChessAI - אודות</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/about.css') }}">
+</head>
+<body>
+
+    <header>
+        <div class="container">
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('about') }}">אודות</a></li>
+                    <li><a href="{{ url_for('login') }}">כניסת משתמש</a></li>
+                    <li><a href="{{ url_for('sign_Up') }}">הרשמה</a></li>
+                    <li><a href="{{ url_for('home') }}">עמוד ראשי</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main id="app">
+        <div class="logo-container">
+            <img src="/static/Logos/chessLogo.png" alt="App Logo" class="app-logo">
+        </div>
+        
+        <div class="title-container">
+            <h1 class="title">ChessAI - אודות</h1>
+            <p>המשחק שלנו מציע חוויית שחמט מתקדמת עם שני מצבים: לשחק נגד בוט או לשחק אונליין.</p>
+        </div>
+
+        <section class="about-section">
+            <h2>על המשחק</h2>
+            <p>ChessAI הוא משחק שחמט חכם שמנצל בינה מלאכותית ולוחות פיזיים כדי לאפשר לך לשחק מול בוט או מול שחקנים אחרים על ידי חיבור הלוח שלהם לאתר בצורה כזו שהכלי שיזיזו יזיז  פיזית יזוז גם על המסך!. המטרה שלנו היא לספק חוויית שחמט מהנה ומאתגרת עם כלים מתקדמים.</p>
+            
+            <h2>הפיצ'רים שלנו</h2>
+            <ul>
+                <li>משחק מול בוט עם רמות קושי שונות</li>
+                <li>אפשרות לשחק אונליין מול שחקנים אחרים על ידי חיבור לוח פיזי אל האתר</li>
+                <li>חוויית משתמש פשוטה וידידותית</li>
+                <li>תמיכה בגרסה ניידת ונגישה לכלל המכשירים</li>
+            </ul>
+        </section>
+    </main>
+
+    <footer>
+        <ul>
+            <li><a href="{{ url_for('login') }}" class="login-link">כניסת משתמש</a></li>
+            <li><a href="{{ url_for('sign_Up') }}"class="signup-link">הרשמה</a></li>
+        </ul>
+        <img src="/static/Logos/footerChess.png" alt="Bot" class="icon">
+        <p>&copy; 2025 זכויות יוצרים</p>
+    </footer>
+    
+
+    <script src="{{ url_for('static', filename='js/about.js') }}" defer></script>
+</body>
+</html>
