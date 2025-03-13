@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChessAI - User Settings</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/user_settings.css') }}">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('forgot_password') }}">Forgot password</a></li>
+                    <li><a href="{{ url_for('about') }}">About</a></li>
+                    <li><a href="{{ url_for('login') }}">Login</a></li>
+                    <li><a href="{{ url_for('sign_up') }}">Sign up</a></li>
+                    <li><a href="{{ url_for('home') }}">Home page</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main id="app">
+        <div class="settings-container">
+            <div class="profile-section">
+                <img src="/static/images/default_profile.png" alt="Profile Picture" class="profile-picture">
+                <h2>{{ user.name }} {{ user.lastName }}</h2>
+            </div>
+
+            <div class="info-section">
+                <h3>User Information</h3>
+                <form>
+                    <label>Email:</label>
+                    <input type="email" v-model="user.email" readonly>
+                    
+                    <label>Phone Number:</label>
+                    <input type="tel" v-model="user.phone">
+
+                    <label>First Name:</label>
+                    <input type="text" v-model="user.name">
+
+                    <label>Last Name:</label>
+                    <input type="text" v-model="user.lastName">
+
+                    <label>Country:</label>
+                    <input type="text" v-model="user.country">
+                    
+                    <h3>Game Stats</h3>
+                    <p>Wins: {{ user.stats.wins }} | Draws: {{ user.stats.draws }} | Losses: {{ user.stats.losses }}</p>
+                </form>
+            </div>
+
+            <div class="history-section">
+                <h3>Game History</h3>
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Opponent</th>
+                            <th>Result</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="game in user.history" :key="game.date">
+                            <td>{{ game.opponent }}</td>
+                            <td :class="game.result">{{ game.result }}</td>
+                            <td>{{ game.date }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+        </div>
+
+        <div class="friends-section">
+            <h3>Friends</h3>
+            <ul class="friends-list">
+                <li v-for="friend in user.friends" :key="friend">{{ friend }}</li>
+            </ul>
+        </div>
+        
+    </main>
+
+    <footer>
+        <ul>
+            <li><a href="{{ url_for('login') }}" class="login-link">Login</a></li>
+            <li><a href="{{ url_for('sign_up') }}" class="signup-link">Sign Up</a></li>
+        </ul>
+        <img src="/static/Logos/footerChess.png" alt="Bot" class="icon">
+        <p>&copy; 2025 All Rights Reserved</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/user_settings.js') }}" defer></script>
+</body>
+</html>
