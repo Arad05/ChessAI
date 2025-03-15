@@ -9,19 +9,29 @@
 </head>
 <body>
 
-    <header>
-        <div class="container">
-            <nav>
-                <ul>
+  <header>
+    <div class="container">
+        <nav>
+            <ul>
+                {% if not session.get('user') %}
                     <li><a href="{{ url_for('forgot_password') }}">Forgot password</a></li>
-                    <li><a href="{{ url_for('about') }}">About</a></li>
+                {% endif %}
+                <li><a href="{{ url_for('about') }}">About</a></li>
+                {% if session.get('user') %}
+                    <!-- Show user settings if logged in -->
+                    <li><a href="{{ url_for('user_settings') }}">Settings</a></li>
+                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                {% else %}
                     <li><a href="{{ url_for('login') }}">Login</a></li>
                     <li><a href="{{ url_for('sign_up') }}">Sign up</a></li>
-                    <li><a href="{{ url_for('home') }}">Home page</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
+                {% endif %}
+                <li><a href="{{ url_for('home') }}">Home</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+      
 
     <main id="app">
         <div class="logo-container">
@@ -58,5 +68,6 @@
     
 
     <script src="{{ url_for('static', filename='js/about.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/vue_about.js') }}" defer></script>
 </body>
 </html>

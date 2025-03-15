@@ -1,14 +1,20 @@
 from datetime import datetime
-import math
 
 class User:
-    def __init__(self, email: str, password: str, first_name: str, last_name: str, phone_number: str, country: str):
+    used_nicknames = set()  # Class variable to track used nicknames
+
+    def __init__(self, email: str, password: str, first_name: str, last_name: str,
+                 phone_number: str, country: str, nickname: str):
+        
+        
         self.email = email
         self.password = password  # In a real program, this should be hashed
         self.first_name = first_name
         self.last_name = last_name
         self.phone_number = phone_number
         self.country = country
+        self.nickname = nickname
+        User.used_nicknames.add(nickname)
         self.friends = set()  # A set of other User objects
         self.games_history = []  # List of game results
         self.join_date = datetime.now()
@@ -42,27 +48,30 @@ class User:
             print("No friend request from this user.")
 
     def record_game(self, opponent, result):
-        """מוסיף משחק להיסטוריה"""
+        """Add game to both players' histories and update ratings."""
         if result not in {'win', 'loss', 'draw'}:
             print("Invalid game result.")
             return
         
+        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         game = {
             'opponent': f"{opponent.first_name} {opponent.last_name}",
             'opponent_email': opponent.email,
             'result': result,
-            'date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            'date': current_time
         }
         self.games_history.append(game)
+        # Record the complementary result for the opponent
+        opponent_result = 'win' if result == 'loss' else 'loss' if result == 'win' else 'draw'
         opponent.games_history.append({
             'opponent': f"{self.first_name} {self.last_name}",
             'opponent_email': self.email,
-            'result': 'win' if result == 'loss' else 'loss' if result == 'win' else 'draw',
-            'date': game['date']
+            'result': opponent_result,
+            'date': current_time
         })
 
         self.update_rating(opponent, result)
-        opponent.update_rating(self, 'win' if result == 'loss' else 'loss' if result == 'win' else 'draw')
+        opponent.update_rating(self, opponent_result)
 
     def update_rating(self, opponent, result):
         """Calculate new ELO rating based on the game result."""
@@ -90,20 +99,4 @@ class User:
         print(f"{self.first_name} is now {'online' if status else 'offline'}.")
 
     def __str__(self):
-        return f"User: {self.first_name} {self.last_name}, Rating: {self.rating}, Friends: {len(self.friends)}, Games Played: {len(self.games_history)}"
-
-
-# Example Usage
-if __name__ == "__main__":
-    Ori = User("orikopilov2007@gmail.com", "Orik2007", "Ori", "Kopilov", "0532257111", "Israel")
-    Arad = User("arador2007@gmail.com", "AradO2007", "Arad", "Or", "0534310507", "Israel")
-    
-    Ori.send_friend_request(Arad)
-    Arad.accept_friend_request(Ori)
-    
-    
-    Ori.send_message(Arad, "Hey, good game!")
-    Arad.send_message(Ori, "Yeah, well played!")
-    
-    print(Ori)
-    print(Arad)
+        return f"User: {self.first_name} {self.last_name} (Nickname: {self.nickname}), Rating: {self.rating}, Friends: {len(self.friends)}, Games Played: {len(self.games_history)}"

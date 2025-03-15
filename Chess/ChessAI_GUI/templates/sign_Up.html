@@ -11,17 +11,24 @@
 <body class="sign-up-page">
     <header>
         <div class="container">
-            <nav>
-                <ul>
-                    <li><a href="{{ url_for('forgot_password') }}">Forgot password</a></li>
-                    <li><a href="{{ url_for('about') }}">About</a></li>
-                    <li><a href="{{ url_for('login') }}">Login</a></li>
-                    <li><a href="{{ url_for('sign_up') }}">Sign Up</a></li>
-                    <li><a href="{{ url_for('home') }}">Home</a></li>
-                </ul>
-            </nav>
+          <nav>
+            <ul>
+              <li><a href="{{ url_for('forgot_password') }}">Forgot password</a></li>
+              <li><a href="{{ url_for('about') }}">About</a></li>
+              {% if session.get('user') %}
+                <!-- Show user settings if logged in -->
+                <li><a href="{{ url_for('user_settings') }}">User Settings</a></li>
+                <li><a href="{{ url_for('logout') }}">Logout</a></li>
+              {% else %}
+                <li><a href="{{ url_for('login') }}">Login</a></li>
+                <li><a href="{{ url_for('sign_up') }}">Sign up</a></li>
+              {% endif %}
+              <li><a href="{{ url_for('home') }}">Home</a></li>
+            </ul>
+          </nav>
         </div>
-    </header>
+      </header>
+      
 
     <main id="app">
         <div class="logo-container">
@@ -38,6 +45,9 @@
 
                 <label for="last_name">Last Name:</label>
                 <input type="text" id="last_name" name="last_name" required v-model="last_name">
+
+                <label for="nickname">Username:</label>
+                <input type="text" id="nickname" name="nickname" required v-model="nickname">
 
                 <label for="email">Email (Gmail):</label>
                 <input type="email" id="email" name="email" required v-model="email">

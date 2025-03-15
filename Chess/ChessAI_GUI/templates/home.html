@@ -13,15 +13,25 @@
         <div class="container">
             <nav>
                 <ul>
-                    <li><a href="{{ url_for('forgot_password') }}">Forgot password</a></li>
+                    {% if not session.get('user') %}
+                        <li><a href="{{ url_for('forgot_password') }}">Forgot password</a></li>
+                    {% endif %}
                     <li><a href="{{ url_for('about') }}">About</a></li>
-                    <li><a href="{{ url_for('login') }}" >Login</a></li>
-                    <li><a href="{{ url_for('sign_up') }}">Sign up</a></li>
-                    <li><a href="{{ url_for('home') }}"> Home page</a></li>
+                    {% if session.get('user') %}
+                        <!-- Show user settings if logged in -->
+                        <li><a href="{{ url_for('user_settings') }}">Settings</a></li>
+                        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                    {% else %}
+                        <li><a href="{{ url_for('login') }}">Login</a></li>
+                        <li><a href="{{ url_for('sign_up') }}">Sign up</a></li>
+                    {% endif %}
+                    <li><a href="{{ url_for('home') }}">Home</a></li>
                 </ul>
             </nav>
         </div>
     </header>
+    
+      
     
 
     <main id="app">

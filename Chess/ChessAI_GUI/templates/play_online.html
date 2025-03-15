@@ -10,16 +10,16 @@
 <body>
     <header>
         <div class="container">
-            <nav>
-                <ul>
-                    <li><a href="about.html">אודות</a></li>
-                    <li><a href="#">פרויקטים</a></li>
-                    <li><a href="#">כניסת משתמש</a></li>
-                    <li><a href="#">הרשמה</a></li>
-                </ul>
-            </nav>
+          <nav>
+            <ul>
+              <li><a href="{{ url_for('home') }}">Home</a></li>
+              <li><a href="{{ url_for('user_settings') }}">Settings</a></li>
+              <li><a href="{{ url_for('about') }}">About</a></li>
+              <li><a href="{{ url_for('logout') }}">Logout</a></li>
+            </ul>
+          </nav>
         </div>
-    </header>
+      </header>
 
     <main id="app">
         <div class="title-container">

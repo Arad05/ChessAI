@@ -5,6 +5,8 @@
     --text-color: #333;
     --footer-background-color: #1c1c1c;
     --footer-text-color: #f0f0f0;
+    --primary-hover-color: #005fa3; /* Even darker blue for hover effect */
+    --nav-hover-color: rgba(0, 123, 255, 0.15); /* Softer hover effect */
 }
 
 html, body {
@@ -21,29 +23,47 @@ body {
     color: var(--text-color);
 }
 
+/* Header */
 header {
     background-color: var(--primary-color);
     padding: 12px 0;
     position: sticky;
     top: 0;
+    z-index: 1000;
 }
 
 header nav ul {
     list-style-type: none;
+    margin: 0;
+    padding: 0;
     display: flex;
     justify-content: flex-end;
     gap: 25px;
 }
 
+header nav ul li {
+    display: inline;
+}
+
 header nav ul li a {
     color: white;
     text-decoration: none;
+    font-size: 1.1rem;
     padding: 10px;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* Navigation hover effects */
 header nav ul li a:hover {
-    background-color: rgba(0, 123, 255, 0.15);
+    color: var(--primary-hover-color);
+    background-color: var(--nav-hover-color);
+    text-decoration: underline;
+}
+
+header nav ul li a:focus,
+header nav ul li a.active {
+    background-color: var(--primary-hover-color);
+    border-radius: 5px;
 }
 
 main {
@@ -52,7 +72,9 @@ main {
     justify-content: center;
     align-items: center;
     padding: 20px;
+    padding-top: 70px; /* Adjust based on your header height */
 }
+
 
 .settings-container {
     background-color: white;
@@ -120,31 +142,133 @@ main {
     font-weight: bold;
 }
 
+/* Remove the negative margin and adjust width to match the container */
+.friends-section {
+    width: 100%;
+    max-width: 650px;
+    margin-top: 20px; /* or adjust as needed */
+    animation: fadeIn 1s ease-in-out;
+}
+
+/* Create a card-like style for the Friends header */
+.friends-header {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 10px 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    font-size: 1.1rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+/* The friend list itself remains the same */
 .friends-list {
     list-style-type: none;
-    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 }
 
-.friends-list li {
-    padding: 5px;
-    border-bottom: 1px solid #ddd;
+.friend-card {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 10px 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    font-size: 0.95rem;
+    width: 100%;
+    text-align: center;
+}
+
+.friend-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
 
 
+  /* Footer */
 footer {
+    padding: 15px; /* Reduce padding to make the footer smaller */
     background-color: var(--footer-background-color);
     color: var(--footer-text-color);
-    padding: 15px;
     text-align: center;
+    margin-top: auto;
     width: 100%;
+    position: relative;
+}
+
+/* Footer links */
+footer ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    position: relative;
+    top: 15px; /* Move the links 20px down */
+}
+
+/* Footer link styles */
+footer a {
+    color: var(--footer-text-color);
+    font-size: 1rem;
+    margin: 0 12px;
+    text-decoration: none;
+    border: 2px solid transparent;
+    border-radius: 5px;
+    padding: 8px 12px;
+    transition: all 0.3s ease;
+}
+
+/* Footer link hover */
+footer a:hover {
+    background-color: var(--primary-hover-color);
+    border-color: var(--footer-text-color);
+}
+
+/* Move the login link slightly to the right */
+footer a.login-link {
+    position: absolute;
+    left: 40%; /* Adjusted to be a little more to the right */
+    transform: translateX(-50%); /* Centerּ it */
+}
+
+/* Move the signup link to 62% of the width */
+footer a.signup-link {
+    position: absolute;
+    left: 55%; /* Keep the signup link in place */
+    transform: translateX(-50%); /* Center it */
+}
+.icon {
+    width: 40px;
+    height: 40px;
+    margin-right: 12px;
+}
+
+
+.app-logo {
+    width: 120px;
+    height: 120px;
+    display: block;
+}
+
+ 
+.icon {
+    width: 40px;
+    height: 40px;
+    margin-right: 12px;
 }
 
 .logo-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-bottom: 20px; /* Adds space below the logo */
-    height: 140px;  /* Ensure it has enough height */
+    margin-bottom: 50px;
+    height: 20px;  /* Ensure it has enough height */
 }
 
 
@@ -152,4 +276,6 @@ footer {
     width: 120px;  /* Ensure a fixed width */
     height: 120px;  /* Ensure a fixed height */
     display: block;  /* Forces the image to be treated as a block element */
+    margin-top:90px;
 }
+
