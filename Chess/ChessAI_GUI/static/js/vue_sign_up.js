@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // Navigation animation using gsap
+    // Animation for the navigation menu
     gsap.from("nav ul li", {
         opacity: 0,
         y: -20,
@@ -14,28 +14,6 @@ document.addEventListener("DOMContentLoaded", function () {
         scale: 0.9,
         duration: 1,
         ease: "power3.out"
-    });
-
-    // Sign Up button animation on hover
-    const signUpButton = document.querySelector("button[type='submit']");
-    signUpButton.addEventListener("mouseover", () => {
-        gsap.to(signUpButton, {
-            scale: 1.1,
-            backgroundColor: "#ffcc00",
-            boxShadow: "0px 10px 20px rgba(0, 0, 0, 0.3)",
-            duration: 0.3,
-            ease: "power2.out"
-        });
-    });
-
-    signUpButton.addEventListener("mouseleave", () => {
-        gsap.to(signUpButton, {
-            scale: 1,
-            backgroundColor: "#ff9900",
-            boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-            duration: 0.3,
-            ease: "power2.out"
-        });
     });
 
     // Input fields effect on focus/blur

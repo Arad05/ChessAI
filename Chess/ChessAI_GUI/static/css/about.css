@@ -252,3 +252,10 @@ footer a.signup-link {
     transform: translateX(-50%); /* Center it */
 }
  
+
+.page-title {
+    text-align: center;
+    color: white;
+    font-size: 2rem;
+    margin-bottom: 10px;
+}

@@ -8,6 +8,8 @@ import string
 import random
 from werkzeug.security import generate_password_hash, check_password_hash
 from user import User
+from functools import wraps
+
 
 # Create Flask instance
 app = Flask(__name__, template_folder="ChessAI_GUI/templates", static_folder="ChessAI_GUI/static")
@@ -46,7 +48,7 @@ users_db = {
         "games_history": [
             {"opponent": "Ori Kopilov", "opponent_nickname": "Orik", "result": "loss", "date": "2025-03-12 15:30"},
          ],
-         "friends": ["OriK"]
+         "friends": ["Orik"]
     },
     "johndoe@example.com": {
          "password": generate_password_hash("DoePass456"),
@@ -59,10 +61,9 @@ users_db = {
         "games_history": [
             {"opponent": "Ori Kopilov", "opponent_nickname": "Orik", "result": "draw", "date": "2025-03-11 20:15"},
          ],
-         "friends": ["OriK"]
+         "friends": ["Orik"]
     }
 }
-
 
 
     #Home page
@@ -74,6 +75,10 @@ def home():
 @csrf.exempt
 @app.route('/sign_up', methods=['GET', 'POST'])
 def sign_up():
+
+    if 'user' in session:
+        return redirect(url_for('home'))
+
     if request.method == 'POST':
         try:
             data = request.get_json()
@@ -118,7 +123,6 @@ def sign_up():
     return render_template('sign_up.html')
 
 
-
     #About page
 @app.route('/about')
 def about():
@@ -128,6 +132,9 @@ def about():
     #Login page
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if 'user' in session:
+        return redirect(url_for('home'))
+    
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
@@ -297,9 +304,11 @@ def update_user_settings():
     return jsonify({'success': True, 'message': 'User settings updated successfully!'})
 
 
-
 @app.route('/profile/<friend_nickname>')
 def profile(friend_nickname):
+    if 'user' not in session:
+        return redirect(url_for('login'))
+
     friend_email = None
     friend_info = None
     for email, info in users_db.items():
@@ -343,12 +352,18 @@ def profile(friend_nickname):
 
 @app.route('/play_online')
 def play_online():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+
     return render_template('play_online.html')
 
 
 
 @app.route('/play_bot')
 def play_bot():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+
     return render_template('play_bot.html')
 
 

@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const result = await response.json();
 
         if (result.success) {
-            window.location.href = "/user_settings"; 
+            window.location.href = "/"; 
         } else {
             errorMessage.textContent = result.message;
         }

@@ -255,13 +255,6 @@ header nav ul {
         transform: scale(1);
     }
 }
-
-.app-logo {
-    width: 120px;
-    height: 120px;
-    display: block;
-}
-
  
 .icon {
     width: 40px;
@@ -275,6 +268,7 @@ header nav ul {
     align-items: center;
     margin-top: 50px;
     height: 140px;  /* Ensure it has enough height */
+    animation: none;
 }
 
 
@@ -283,4 +277,13 @@ header nav ul {
     height: 120px;  /* Ensure a fixed height */
     display: block;  /* Forces the image to be treated as a block element */
     margin-top: 170px;
+    animation: none;
+    transition: none;
+}
+
+.page-title {
+    text-align: center;
+    color: white;
+    font-size: 2rem;
+    margin-bottom: 10px;
 }

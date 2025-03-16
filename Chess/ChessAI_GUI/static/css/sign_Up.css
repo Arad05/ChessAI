@@ -84,6 +84,38 @@ header {
     z-index: 1000;
 }
 
+/* Loading spinner animation */
+.loading-spinner {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: none;
+}
+
+.spinner {
+    border: 12px solid #e0e0e0;
+    border-top: 12px solid var(--primary-color); /* Darker blue spinner */
+    border-radius: 50%;
+    width: 100px;
+    height: 100px;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Header */
+header {
+    background-color: var(--primary-color);
+    padding: 12px 0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
 header nav ul {
     list-style-type: none;
     margin: 0;
@@ -105,10 +137,17 @@ header nav ul li a {
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* Navigation hover effects */
 header nav ul li a:hover {
     color: var(--primary-hover-color);
     background-color: var(--nav-hover-color);
     text-decoration: underline;
+}
+
+header nav ul li a:focus,
+header nav ul li a.active {
+    background-color: var(--primary-hover-color);
+    border-radius: 5px;
 }
 
 /* Footer */
@@ -206,4 +245,11 @@ body.login-page {
     display: flex;
     flex-direction: column;
     height: 100%;
+}
+
+.page-title {
+    text-align: center;
+    color: white;
+    font-size: 2rem;
+    margin-bottom: 10px;
 }

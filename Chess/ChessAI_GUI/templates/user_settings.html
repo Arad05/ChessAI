@@ -4,23 +4,37 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ChessAI - User Settings</title>
+  <!-- Load Vue -->
   <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.min.js"></script>
+  <!-- Load GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/user_settings.css') }}">
   <meta name="csrf_token" content="{{ csrf_token() }}">
 </head>
 <body>
   <header>
+    <h1 class="page-title">Settings</h1>
     <div class="container">
-      <nav>
-        <ul>
-          <li><a href="{{ url_for('home') }}">Home</a></li>
-          <li><a href="{{ url_for('user_settings') }}">Settings</a></li>
-          <li><a href="{{ url_for('about') }}">About</a></li>
-          <li><a href="{{ url_for('logout') }}">Logout</a></li>
-        </ul>
-      </nav>
+        <nav>
+            <ul>
+                {% if not session.get('user') %}
+                    <li><a href="{{ url_for('forgot_password') }}">Forgot password</a></li>
+                {% endif %}
+                <li><a href="{{ url_for('about') }}">About</a></li>
+                {% if session.get('user') %}
+                    <!-- Show user settings if logged in -->
+                    <li><a href="{{ url_for('user_settings') }}">Settings</a></li>
+                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('login') }}">Login</a></li>
+                    <li><a href="{{ url_for('sign_up') }}">Sign up</a></li>
+                {% endif %}
+                <li><a href="{{ url_for('home') }}">Home</a></li>
+            </ul>
+        </nav>
     </div>
-  </header>
+</header>
+
 
   <script>
     const initialUserData = {{ user|tojson|safe }};
@@ -31,7 +45,7 @@
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="settings-container">
       <div class="profile-section">
-        <img src="/static/images/default_profile.png" alt="Profile Picture" class="profile-picture">
+        <img src="/static/Logos/user.png" alt="Profile Picture" class="profile-picture">
         <h2>{{ user.name }} {{ user.lastName }}</h2>
         <p>Nickname: {{ user.nickname }}</p>
       </div>
@@ -112,7 +126,38 @@
     <p>&copy; 2025 All Rights Reserved</p>
   </footer>
 
-  <!-- Removed GSAP animation script -->
+  <!-- Vue App Script -->
   <script src="{{ url_for('static', filename='js/vue_user_settings.js') }}" defer></script>
+  
+  <!-- GSAP Animation Script -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      // Animate navigation items
+      gsap.from("header nav ul li", {
+        opacity: 0,
+        y: -20,
+        duration: 0.8,
+        stagger: 0.15,
+        ease: "power2.out"
+      });
+
+      // Animate settings container
+      gsap.from(".settings-container", {
+        opacity: 0,
+        y: 30,
+        duration: 1,
+        ease: "power3.out"
+      });
+
+      // Animate friends section with a slight delay
+      gsap.from(".friends-section", {
+        opacity: 0,
+        x: -50,
+        duration: 1,
+        delay: 0.5,
+        ease: "power3.out"
+      });
+    });
+  </script>
 </body>
 </html>
