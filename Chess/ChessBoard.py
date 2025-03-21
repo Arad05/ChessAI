@@ -11,20 +11,25 @@ class ChessBoard:
             return " . "
 
 
+    # A function that builds the board
     @staticmethod
     def makeBoard():
+        
         # Label the top row with A-H
         for i in range(1, len(ChessBoard.board[0])):
             ChessBoard.board[0][i] = " "+chr(ord('A') + i - 1) + " "
+
         # Label the left column with 1-8
         for i in range(1, len(ChessBoard.board)):
             ChessBoard.board[i][0] = str(i)
+
         # Put dots as blank spaces
         for i in range(1, len(ChessBoard.board)):
             for j in range(1, len(ChessBoard.board[i])):
                 ChessBoard.board[i][j] = ChessBoard.null()
 
 
+    # Moving a piece
     @staticmethod
     def movePiece(rowXO, colYO, rowXN, colYN):
         # Convert board coordinates to indices
@@ -77,6 +82,8 @@ class ChessBoard:
                 ret+=str(place)
             ret+="\n"
         return ret+"\n"
+    
+
     
     @staticmethod
     def setBoardToAnExistingBoard(board):
