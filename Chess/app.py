@@ -10,7 +10,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from user import User
 from functools import wraps
 import bleach
-
+from user_roles import Member, Admin
+from datetime import datetime, timedelta
 
 # Create Flask instance
 app = Flask(__name__, template_folder="ChessAI_GUI/templates", static_folder="ChessAI_GUI/static")
@@ -41,7 +42,9 @@ users_db = {
               {"opponent": "Arad Or", "opponent_nickname": "AradO", "result": "win", "date": "2025-03-12 15:30"},
               {"opponent": "John Doe", "opponent_nickname": "JohnD", "result": "draw", "date": "2025-03-11 20:15"}
          ],
-         "friends": ["AradO", "JohnD"]
+         "friends": ["AradO", "JohnD"],
+         "role": "admin",
+         "ban_end": None
     },
     "arador2007@gmail.com": {
          "password": generate_password_hash("Password123"),
@@ -54,7 +57,9 @@ users_db = {
         "games_history": [
             {"opponent": "Ori Kopilov", "opponent_nickname": "Orik", "result": "loss", "date": "2025-03-12 15:30"},
          ],
-         "friends": ["Orik"]
+         "friends": ["Orik"],
+         "role": "member",
+         "ban_end": None
     },
     "johndoe@example.com": {
          "password": generate_password_hash("DoePass456"),
@@ -67,7 +72,9 @@ users_db = {
         "games_history": [
             {"opponent": "Ori Kopilov", "opponent_nickname": "Orik", "result": "draw", "date": "2025-03-11 20:15"},
          ],
-         "friends": ["Orik"]
+         "friends": ["Orik"],
+         "role": "user",
+         "ban_end": None
     }
 }
 
@@ -79,6 +86,13 @@ def sanitize(input_value):
         return bleach.clean(input_value)
     return input_value
 
+@app.context_processor
+def inject_current_user():
+    current_user = None
+    if 'user' in session:
+        # Look up the user in the fake DB
+        current_user = users_db.get(session['user'])
+    return dict(current_user=current_user)
 
 
 #Home page
@@ -129,7 +143,8 @@ def sign_up():
                 "phone_number": phone_number,
                 "country": country,
                 "games_history": [],
-                "friends": []
+                "friends": [],
+                "role": "user"
             }
 
             return jsonify({"success": True, "message": "המשתמש נרשם בהצלחה!"})
@@ -152,24 +167,32 @@ def about():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if 'user' in session:
+        email = session['user']
+        user = users_db.get(email)
+        if user and user["ban_end"] and user["ban_end"] > datetime.now():
+            return jsonify({"success": False, "message": "You are banned until " + user["ban_end"].strftime('%Y-%m-%d %H:%M:%S')})
         return redirect(url_for('home'))
     
     if request.method == 'POST':
-
-        # Sanitize email; leave password as entered
         email = sanitize(request.form.get('email'))
         password = request.form.get('password')
 
         if email in users_db:
-            if check_password_hash(users_db[email]['password'], password):
-                session['user'] = email  
+            user = users_db[email]
+            if check_password_hash(user['password'], password):
+                if user["ban_end"] and user["ban_end"] > datetime.now():
+                    return jsonify({"success": False, "message": "You are banned until " + user["ban_end"].strftime('%Y-%m-%d %H:%M:%S')})
+                session['user'] = email
+                session['role'] = user['role']
                 return jsonify({"success": True})
             else:
-                return jsonify({"success": False, "message": "אימייל או סיסמה שגויים"})
+                return jsonify({"success": False, "message": "Incorrect email or password"})
         else:
-            return jsonify({"success": False, "message": "המשתמש לא קיים"})
+            return jsonify({"success": False, "message": "User does not exist"})
 
     return render_template('login.html')
+
+
 
 
 
@@ -273,10 +296,13 @@ def get_current_user():
 
     user.rating = user_info.get("rating", 1200)
     user.games_history = user_info.get("games_history", [])
+    user.role = user_info.get("role", "user")  # Ensure role is included
+    
+    # Set role from session if necessary
+    user.role = session.get('role', user.role)
 
     # Build a list of friend objects using their nickname. This is a simplified version and assumes that the nickname is unique.
     friends_list = []
-
     for friend_nickname in user_info.get("friends", []):
         friend_data = next((data for data in users_db.values() if data.get("nickname") == friend_nickname), None)
         if friend_data:
@@ -287,7 +313,6 @@ def get_current_user():
     user.friends = friends_list
 
     return user
-
 
 
 # User settings page
@@ -307,7 +332,8 @@ def user_settings():
         'name': user.first_name,
         'lastName': user.last_name,
         'country': user.country,
-        'rating': user.rating,  # New ELO rating field.
+        'rating': user.rating,
+        'role': user.role,
         'stats': {
             'wins': sum(1 for game in user.games_history if game['result'] == 'win'),
             'draws': sum(1 for game in user.games_history if game['result'] == 'draw'),
@@ -342,7 +368,6 @@ def update_user_settings():
 
 
 
-# View friend's profile
 @app.route('/profile/<friend_nickname>')
 def profile(friend_nickname):
     if 'user' not in session:
@@ -376,7 +401,8 @@ def profile(friend_nickname):
         'rating': friend_info.get('rating', 1200),
         'stats': stats,
         'history': friend_info.get("games_history", []),
-        'friends': []
+        'friends': [],
+        'role': friend_info.get('role', 'user')
     }
 
     # Fetch friends data
@@ -392,6 +418,7 @@ def profile(friend_nickname):
     friend_data['friends'] = friends_list
 
     return render_template("friend_profile.html", user=friend_data)
+
 
 
 
@@ -486,5 +513,140 @@ def record_game():
     return jsonify({'success': True, 'message': 'Game recorded and ratings updated!'}), 200
 
 
+
+# ---------------------------
+# New endpoint: Promote a user to member
+# ---------------------------
+# This endpoint handles two cases:
+#   1. Admin-provided: an admin (by username/email) promotes a user.
+#   2. Payment-based: a user pays (minimum $5 or equivalent) and is promoted automatically.
+# The payment-based promotion is not implemented in this demo.
+@app.route('/promote_to_member', methods=['POST'])
+def promote_to_member():
+    data = request.get_json()
+
+    # Case 1: Admin promotion (requires admin_email and target_email)
+    if "target_email" in data:
+        # Check if the current logged-in user is an admin
+        logged_in_user_email = session.get('user')
+        if not logged_in_user_email:
+            return jsonify({"success": False, "message": "לא מחובר למערכת"}), 403
+
+        admin_user = users_db.get(logged_in_user_email)
+        if admin_user is None or admin_user.get("role") != "admin":
+            return jsonify({"success": False, "message": "הרשאות מנהל דרושות."}), 403
+        
+        target_email = sanitize(data.get("target_email"))
+        target_user = users_db.get(target_email)
+        
+        if not target_user:
+            return jsonify({"success": False, "message": "המשתמש לא נמצא."}), 404
+        if target_user.get("role", "user") != "user":
+            return jsonify({"success": False, "message": "משתמש זה כבר קיים כ-member או admin."}), 400
+        
+        # Promote the target user
+        target_user["role"] = "member"
+        return jsonify({"success": True, "message": f"{target_user.get('nickname')} promoted to member by admin."})
+
+    # Case 2: Payment-based promotion (not implemented in this demo)
+    elif "target_email" in data and "payment_amount" in data and "currency" in data:
+        target_email = sanitize(data.get("target_email"))
+        payment_amount = float(data.get("payment_amount"))
+        currency = data.get("currency").strip().upper()
+
+        # Simple conversion rates relative to USD (for example purposes only)
+        conversion_rates = {
+            "USD": 1.0,
+            "EUR": 1.1,
+            "ILS": 0.28
+        }
+        rate = conversion_rates.get(currency, None)
+        if rate is None:
+            return jsonify({"success": False, "message": "מטבע לא נתמך."}), 400
+        
+        # Convert the payment to USD equivalent
+        usd_equiv = payment_amount * rate
+        if usd_equiv < 5:
+            return jsonify({"success": False, "message": "Payment is less than the required amount."}), 400
+        
+        # Promote the user if they exist and are not already a member/admin
+        target_user = users_db.get(target_email)
+        if not target_user:
+            return jsonify({"success": False, "message": "המשתמש לא נמצא."}), 404
+        if target_user.get("role", "user") != "user":
+            return jsonify({"success": False, "message": "משתמש זה כבר קיים כ-member או admin."}), 400
+        
+        target_user["role"] = "member"
+        return jsonify({"success": True, "message": f"{target_user.get('nickname')} promoted to member via payment."})
+
+    return jsonify({"success": False, "message": "Invalid request data."}), 400
+
+
+
+
+# ---------------------------
+# New endpoint: Admin Dashboard
+# ---------------------------
+@app.route('/admin_dashboard', methods=['GET', 'POST'])
+def admin_dashboard():
+    current_user = get_current_user()
+    if not current_user or current_user.role != "admin":
+        return redirect(url_for('login'))
+    
+    # For GET, display all users
+    if request.method == "GET":
+        admin_instance = Admin(
+            email=session["user"],
+            password="",
+            first_name=current_user.first_name,
+            last_name=current_user.last_name,
+            phone_number=current_user.phone_number,
+            country=current_user.country,
+            nickname=current_user.nickname
+        )
+        all_users = admin_instance.view_all_users(users_db)
+        return render_template("admin_dashboard.html", users=all_users)
+    
+    # For POST, process admin actions
+    if request.method == "POST":
+        action = request.form.get("action")
+        target_email = request.form.get("target_email")
+        admin_instance = Admin(
+            email=session["user"],
+            password="",
+            first_name=current_user.first_name,
+            last_name=current_user.last_name,
+            phone_number=current_user.phone_number,
+            country=current_user.country,
+            nickname=current_user.nickname
+        )
+        message = ""
+        if action == "promote":
+            success = admin_instance.promote_user(target_email, users_db)
+            message = "Promoted successfully" if success else "Promotion failed"
+        elif action == "demote":
+            success = admin_instance.demote_member(target_email, users_db)
+            message = "Demoted successfully" if success else "Demotion failed"
+        elif action == "ban":
+            try:
+                duration = int(request.form.get("duration"))
+            except:
+                duration = 0
+            success = admin_instance.ban_user(target_email, duration, users_db)
+            message = "User banned" if success else "Ban failed"
+        elif action == "unban":
+            success = admin_instance.unban_user(target_email, users_db)
+            message = "User unbanned" if success else "Unban failed"
+        elif action == "delete":
+            success = admin_instance.delete_user(target_email, users_db)
+            message = "User deleted" if success else "Delete failed"
+        else:
+            message = "Unknown action"
+        return jsonify({"success": True, "message": message})
+
+    
+
+
 if __name__ == "__main__":
-    app.run(debug=True, port=5001)
+    port = 5001 if app.debug else 5003
+    app.run(debug=True, port=port)

@@ -271,3 +271,19 @@ footer a.signup-link {
   font-size: 2rem;
   margin-bottom: 10px;
 }
+
+.admin-role {
+    color: #f44336; /* Red for admin */
+    font-weight: bold;
+}
+
+.rookie-role {
+    color: #398ef0; /* Light blue-grey */
+    font-weight: bold;
+}
+
+.member-role {
+    color: #ffb300; /* Gold for member */
+    font-weight: bold;
+}
+

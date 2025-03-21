@@ -13,8 +13,8 @@
 </head>
 <body>
   <header>
-    <h1 class="page-title">Settings</h1>
     <div class="container">
+        <h1 class="page-title">About</h1>
         <nav>
             <ul>
                 {% if not session.get('user') %}
@@ -25,6 +25,11 @@
                     <!-- Show user settings if logged in -->
                     <li><a href="{{ url_for('user_settings') }}">Settings</a></li>
                     <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                    <!-- If current_user exists and is admin, show admin dashboard link -->
+                    {% if current_user and current_user.role == "admin" %}
+                        <li><a href="{{ url_for('admin_dashboard') }}">Admin Page</a></li>
+                    {% endif %}
+                
                 {% else %}
                     <li><a href="{{ url_for('login') }}">Login</a></li>
                     <li><a href="{{ url_for('sign_up') }}">Sign up</a></li>
@@ -32,9 +37,9 @@
                 <li><a href="{{ url_for('home') }}">Home</a></li>
             </ul>
         </nav>
+        
     </div>
 </header>
-
 
   <script>
     const initialUserData = {{ user|tojson|safe }};
@@ -48,6 +53,7 @@
         <img src="/static/Logos/user.png" alt="Profile Picture" class="profile-picture">
         <h2>{{ user.name }} {{ user.lastName }}</h2>
         <p>Nickname: {{ user.nickname }}</p>
+        <p>Role: <span :class="roleClass">{{ user.role }}</span></p>
       </div>
 
       <div class="info-section">
@@ -131,33 +137,33 @@
   
   <!-- GSAP Animation Script -->
   <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      // Animate navigation items
-      gsap.from("header nav ul li", {
-        opacity: 0,
-        y: -20,
-        duration: 0.8,
-        stagger: 0.15,
-        ease: "power2.out"
-      });
-
-      // Animate settings container
-      gsap.from(".settings-container", {
-        opacity: 0,
-        y: 30,
-        duration: 1,
-        ease: "power3.out"
-      });
-
-      // Animate friends section with a slight delay
-      gsap.from(".friends-section", {
-        opacity: 0,
-        x: -50,
-        duration: 1,
-        delay: 0.5,
-        ease: "power3.out"
-      });
+document.addEventListener("DOMContentLoaded", function () {
+  // Animate navigation items
+    gsap.from("header nav ul li", {
+      opacity: 0,
+      y: -20,
+      duration: 0.8,
+      stagger: 0.15,
+      ease: "power2.out"
     });
+
+    // Animate settings container
+    gsap.from(".settings-container", {
+      opacity: 0,
+      y: 30,
+      duration: 1,
+      ease: "power3.out"
+    });
+
+    // Animate friends section with a slight delay
+    gsap.from(".friends-section", {
+      opacity: 0,
+      x: -50,
+      duration: 1,
+      delay: 0.5,
+      ease: "power3.out"
+    });
+  });
   </script>
 </body>
 </html>

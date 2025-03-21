@@ -6,6 +6,7 @@ const app = Vue.createApp({
         phone: "053-225-7111",
         name: "Ori",
         lastName: "Kopilov",
+        role: "Admin",
         friends: [
           { nickname: "NotSamur", name: "Arad Or" },
           { nickname: "JohnD", name: "John Doe" }
@@ -22,6 +23,17 @@ const app = Vue.createApp({
       }
     };
   },
+  computed: {
+    roleClass() {
+      // Check if the role exists in the predefined classes, otherwise fallback to 'Rookie'
+      const validRoles = ["Rookie", "member", "admin"];
+      if (validRoles.includes(this.user.role)) {
+        return this.user.role;  // Return the role itself to match CSS class
+      }
+      return 'Rookie'; // Fallback if the role is not recognized
+    }
+  }
+  ,
   methods: {
     updateSettings() {
       fetch('/update_user_settings', {

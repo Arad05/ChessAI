@@ -1,14 +1,21 @@
 /* CSS Variables */
 :root {
-    --primary-color: #007bff;
-    --background-color: #f8f9fa;
-    --text-color: #333;
-    --footer-background-color: #1c1c1c;
-    --footer-text-color: #f0f0f0;
-    --primary-hover-color: #005fa3; /* Even darker blue for hover effect */
-    --nav-hover-color: rgba(0, 123, 255, 0.15); /* Softer hover effect */
+    --primary-color: #007bff; /* Vibrant blue */
+    --secondary-color: #5e42c5; /* Purple accent */
+    --background-color: #f4f7fa; /* Light background for better contrast */
+    --text-color: #333; /* Dark text for readability */
+    --footer-background-color: #1d1d1d; /* Dark footer */
+    --footer-text-color: #e0e0e0; /* Light footer text */
+    --primary-hover-color: #005fa3; /* Slightly darker blue for hover effect */
+    --nav-hover-color: rgba(0, 123, 255, 0.1); /* Softer hover effect */
+    --card-bg-color: #ffffff; /* White background for cards */
+    --card-border-color: #ddd; /* Light border color for cards */
+    --win-color: #4CAF50; /* Green for win */
+    --loss-color: #f44336; /* Red for loss */
+    --draw-color: #9e9e9e; /* Grey for draw */
 }
 
+/* General body and page settings */
 html, body {
     height: 100%;
     margin: 0;
@@ -22,6 +29,7 @@ html, body {
 body {
     font-family: 'Helvetica Neue', sans-serif;
     color: var(--text-color);
+    background-color: var(--background-color); /* Ensuring consistent background color */
 }
 
 /* Header */
@@ -76,9 +84,9 @@ main {
     padding-top: 70px; /* Adjust based on your header height */
 }
 
-
+/* Profile & Settings Container */
 .settings-container {
-    background-color: white;
+    background-color: var(--card-bg-color);
     padding: 25px;
     border-radius: 12px;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
@@ -96,7 +104,7 @@ main {
     border-radius: 50%;
     border: 4px solid var(--primary-color);
     margin-bottom: 15px;
-  }
+}
 
 .info-section {
     margin-bottom: 20px;
@@ -112,6 +120,7 @@ main {
     font-weight: bold;
 }
 
+/* History Table */
 .history-table {
     width: 100%;
     border-collapse: collapse;
@@ -125,26 +134,26 @@ main {
 }
 
 .history-table th {
-    background-color: #007bff;
+    background-color: var(--primary-color);
     color: white;
 }
 
 .win {
-    color: green;
+    color: var(--win-color);
     font-weight: bold;
 }
 
 .loss {
-    color: red;
+    color: var(--loss-color);
     font-weight: bold;
 }
 
 .draw {
-    color: gray;
+    color: var(--draw-color);
     font-weight: bold;
 }
 
-/* Remove the negative margin and adjust width to match the container */
+/* Friends Section */
 .friends-section {
     width: 100%;
     max-width: 650px;
@@ -152,20 +161,18 @@ main {
     animation: fadeIn 1s ease-in-out;
 }
 
-/* Create a card-like style for the Friends header */
 .friends-header {
-    background-color: #fff;
-    border: 1px solid #ddd;
+    background-color: var(--card-bg-color);
+    border: 1px solid var(--card-border-color);
     border-radius: 10px;
     padding: 10px 15px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     font-size: 1.1rem;
     font-weight: bold;
     text-align: center;
     margin-bottom: 15px;
 }
 
-/* The friend list itself remains the same */
 .friends-list {
     list-style-type: none;
     display: flex;
@@ -174,11 +181,11 @@ main {
 }
 
 .friend-card {
-    background-color: #fff;
-    border: 1px solid #ddd;
+    background-color: var(--card-bg-color);
+    border: 1px solid var(--card-border-color);
     border-radius: 10px;
     padding: 10px 15px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     font-size: 0.95rem;
     width: 100%;
@@ -187,11 +194,10 @@ main {
 
 .friend-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
-
-  /* Footer */
+/* Footer */
 footer {
     padding: 15px; /* Reduce padding to make the footer smaller */
     background-color: var(--footer-background-color);
@@ -211,7 +217,7 @@ footer ul {
     justify-content: center;
     gap: 20px;
     position: relative;
-    top: 15px; /* Move the links 20px down */
+    top: 15px; /* Move the links 15px down */
 }
 
 /* Footer link styles */
@@ -232,53 +238,31 @@ footer a:hover {
     border-color: var(--footer-text-color);
 }
 
-/* Move the login link slightly to the right */
+/* Login & Signup links */
 footer a.login-link {
     position: absolute;
     left: 40%; /* Adjusted to be a little more to the right */
-    transform: translateX(-50%); /* Centerּ it */
+    transform: translateX(-50%);
 }
 
-/* Move the signup link to 62% of the width */
 footer a.signup-link {
     position: absolute;
     left: 55%; /* Keep the signup link in place */
-    transform: translateX(-50%); /* Center it */
+    transform: translateX(-50%);
 }
+
+/* Logo & Icon */
 .icon {
     width: 40px;
     height: 40px;
     margin-right: 12px;
 }
-
 
 .app-logo {
     width: 120px;
     height: 120px;
     display: block;
-}
-
- 
-.icon {
-    width: 40px;
-    height: 40px;
-    margin-right: 12px;
-}
-
-.logo-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 50px;
-    height: 20px;  /* Ensure it has enough height */
-}
-
-
-.app-logo {
-    width: 120px;  /* Ensure a fixed width */
-    height: 120px;  /* Ensure a fixed height */
-    display: block;  /* Forces the image to be treated as a block element */
-    margin-top:90px;
+    margin-top: 90px;
 }
 
 .page-title {
@@ -286,4 +270,20 @@ footer a.signup-link {
     color: white;
     font-size: 2rem;
     margin-bottom: 10px;
+}
+
+/* Role Styling */
+span.admin {
+    color: #f44336; /* Red for admin */
+    font-weight: bold;
+}
+
+span.member {
+    color: #ffb300; /* Gold for member */
+    font-weight: bold;
+}
+
+span.Rookie {
+    color: #398ef0; /* Light blue-grey */
+    font-weight: bold;
 }
