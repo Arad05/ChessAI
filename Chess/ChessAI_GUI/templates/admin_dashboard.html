@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChessAI - Admin Dashboard</title>
+  <!-- Load Vue before your custom script -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_dashboard.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/vue@3.2.0/dist/vue.global.prod.js"></script>
+  <meta name="csrf_token" content="{{ csrf_token() }}">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1 class="page-title">About</h1>
+            <nav>
+                <ul>
+                    {% if not session.get('user') %}
+                        <li><a href="{{ url_for('forgot_password') }}">Forgot password</a></li>
+                    {% endif %}
+                    <li><a href="{{ url_for('about') }}">About</a></li>
+                    {% if session.get('user') %}
+                        <!-- Show user settings if logged in -->
+                        <li><a href="{{ url_for('user_settings') }}">Settings</a></li>
+                        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                        <!-- If current_user exists and is admin, show admin dashboard link -->
+                        {% if current_user and current_user.role == "admin" %}
+                            <li><a href="{{ url_for('admin_dashboard') }}">Admin Page</a></li>
+                        {% endif %}
+                    
+                    {% else %}
+                        <li><a href="{{ url_for('login') }}">Login</a></li>
+                        <li><a href="{{ url_for('sign_up') }}">Sign up</a></li>
+                    {% endif %}
+                    <li><a href="{{ url_for('home') }}">Home</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+  <h1>Admin Dashboard</h1>
+  <table id="usersTable">
+    <thead>
+      <tr>
+        <th>Email</th>
+        <th>Nickname</th>
+        <th>Role</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+      <tr>
+        <td>{{ user.email if user.email is defined else "N/A" }}</td>
+        <td>{{ user.nickname }}</td>
+        <td>{{ user.role }}</td>
+        <td>
+          {% if user.role == "user" %}
+            <button class="action-btn" data-action="promote" data-email="{{ user.email }}">Promote to Member</button>
+          {% elif user.role == "member" %}
+            <button class="action-btn" data-action="demote" data-email="{{ user.email }}">Demote to User</button>
+          {% endif %}
+          {% if user.role != "admin" %}
+            <button class="action-btn" data-action="ban" data-email="{{ user.email }}">Ban</button>
+            <button class="action-btn" data-action="delete" data-email="{{ user.email }}">Delete</button>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <footer>
+        <ul>
+            <li><a href="{{ url_for('login') }}" class="login-link">Login</a></li>
+            <li><a href="{{ url_for('sign_up') }}" class="signup-link">Sign Up</a></li>
+        </ul>
+        <img src="/static/Logos/footerChess.png" alt="Bot" class="icon">
+        <p>&copy; 2025 All Rights Reserved</p>
+    </footer>
+
+  <!-- Hidden modal for ban duration input -->
+  <div id="banModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Ban User</h2>
+      <p>Please enter ban duration in minutes:</p>
+      <input type="number" id="banDuration" min="1" placeholder="Minutes">
+      <button id="confirmBan">Confirm Ban</button>
+    </div>
+  </div>
+
+  <!-- Load your custom script after Vue -->
+  <script src="{{ url_for('static', filename='js/admin_dashboard.js') }}"></script>
+  <script type="module" src="{{ url_for('static', filename='js/vue_admin_dashboard.js') }}" defer></script>
+
+</body>
+</html>

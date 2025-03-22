@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChessAI - Login</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.min.js"></script>
+    <!-- Include GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+</head>
+<body class="login-page">
+
+    <header>
+        <h1 class="page-title">Login</h1>
+        <div class="container">
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('forgot_password') }}">Forgot password</a></li>
+                    <li><a href="{{ url_for('about') }}">About</a></li>
+                    <li><a href="{{ url_for('login') }}">Login</a></li>
+                    <li><a href="{{ url_for('sign_up') }}">Sign up</a></li>
+                    <li><a href="{{ url_for('home') }}">Home</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main id="app">
+        <div class="logo-container">
+            <img src="/static/Logos/chessLogo.png" alt="App Logo" class="app-logo">
+        </div>
+
+        <div class="login-container">
+            <h1>User Login</h1>
+            <form id="loginForm" @submit.prevent="submitLogin">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+
+                <button type="submit">Login</button>
+            </form>
+            <a href="forgot_password" class="forgot-password">Forgot password</a>
+            <a href="sign_up" class="sign_up">Sign up</a>
+            <p id="errorMessage" class="error-message"></p>
+        </div>
+    </main>
+
+    <footer>
+        <ul>
+            <li><a href="{{ url_for('login') }}" class="login-link">Login</a></li>
+            <li><a href="{{ url_for('sign_up') }}" class="signup-link">Sign Up</a></li>
+        </ul>
+        <img src="/static/Logos/footerChess.png" alt="Bot" class="icon">
+        <p>&copy; 2025 All Rights Reserved</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/login.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/vue_login.js') }}" defer></script>
+</body>
+</html>

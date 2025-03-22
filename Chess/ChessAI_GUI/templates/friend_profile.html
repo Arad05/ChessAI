@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChessAI - Friend Profile</title>
+  <!-- Google Fonts for a modern look -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/friend_profile.css') }}">
+  <!-- GSAP Animation Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/gsap.min.js"></script>
+</head>
+<body>
+  <header>
+    <div class="container">
+        <h1 class="page-title">About</h1>
+        <nav>
+            <ul>
+                {% if not session.get('user') %}
+                    <li><a href="{{ url_for('forgot_password') }}">Forgot password</a></li>
+                {% endif %}
+                <li><a href="{{ url_for('about') }}">About</a></li>
+                {% if session.get('user') %}
+                    <!-- Show user settings if logged in -->
+                    <li><a href="{{ url_for('user_settings') }}">Settings</a></li>
+                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                    <!-- If current_user exists and is admin, show admin dashboard link -->
+                    {% if current_user and current_user.role == "admin" %}
+                        <li><a href="{{ url_for('admin_dashboard') }}">Admin Page</a></li>
+                    {% endif %}
+                
+                {% else %}
+                    <li><a href="{{ url_for('login') }}">Login</a></li>
+                    <li><a href="{{ url_for('sign_up') }}">Sign up</a></li>
+                {% endif %}
+                <li><a href="{{ url_for('home') }}">Home</a></li>
+            </ul>
+        </nav>
+        
+    </div>
+</header>
+
+
+  <main>
+    <div class="profile-container">
+      <div class="profile-header">
+        <img src="/static/Logos/user.png" alt="Profile Picture" class="profile-picture">
+        <h2>{{ user.name }} {{ user.lastName }}</h2>
+        <p class="elo-rating">ELO Rating: {{ user.rating }}</p>
+        <p class="username">Username: {{ user.nickname }}</p>
+        <p>Role: <span id="role" class="role-class">{{ user.role }}</span></p>
+      </div>
+
+      <div class="profile-stats">
+        <h3>Game Stats</h3>
+        <p>Wins: {{ user.stats.wins }} | Draws: {{ user.stats.draws }} | Losses: {{ user.stats.losses }}</p>
+      </div>
+
+      <div class="profile-history">
+        <h3>Game History</h3>
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Opponent</th>
+              <th>Result</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for game in user.history %}
+            <tr>
+              <td>{{ game.opponent }}</td>
+              <td class="{{ game.result }}">{{ game.result }}</td>
+              <td>{{ game.date }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="friend-list-section">
+        <h3>Friends</h3>
+        <div class="friends-list">
+          {% for friend in user.friends %}
+          <div class="friend-card">
+            <a href="{{ url_for('profile', friend_nickname=friend.nickname) }}">
+              <p>{{ friend.nickname }}</p>
+            </a>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <ul>
+      <li><a href="{{ url_for('login') }}" class="login-link">Login</a></li>
+      <li><a href="{{ url_for('sign_up') }}" class="signup-link">Sign Up</a></li>
+    </ul>
+    <img src="/static/Logos/footerChess.png" alt="Bot" class="icon">
+    <p>&copy; 2025 All Rights Reserved</p>
+  </footer>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // Animate navigation items
+      gsap.from("nav ul li", {
+        opacity: 0,
+        y: -20,
+        duration: 0.8,
+        stagger: 0.15,
+        ease: "power2.out"
+      });
+      
+      // Animate overall profile container
+      gsap.from(".profile-container", {
+        opacity: 0,
+        y: 50,
+        duration: 1,
+        ease: "power3.out"
+      });
+      
+      // Animate header section with a slight scale effect
+      gsap.from(".profile-header", {
+        opacity: 0,
+        scale: 0.9,
+        duration: 1,
+        ease: "back.out(1.7)",
+        delay: 0.3
+      });
+      
+      // Animate stats section sliding in from the left
+      gsap.from(".profile-stats", {
+        opacity: 0,
+        x: -30,
+        duration: 1,
+        ease: "power3.out",
+        delay: 0.5
+      });
+      
+      // Animate each table row in the game history
+      gsap.from(".history-table tbody tr", {
+        opacity: 0,
+        y: 20,
+        duration: 0.8,
+        stagger: 0.1,
+        ease: "power2.out",
+        delay: 0.7
+      });
+      
+      // Animate friend cards with a slight upward slide
+      gsap.from(".friend-card", {
+        opacity: 0,
+        y: 20,
+        duration: 0.8,
+        stagger: 0.1,
+        ease: "power2.out",
+        delay: 0.9
+      });
+    });
+  </script>
+    <script src="{{ url_for('static', filename='js/friend_profile.js') }}"></script>
+</body>
+</html>

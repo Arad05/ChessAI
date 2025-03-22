@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChessAI - Sign Up</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sign_up.css') }}">
+    <meta name="csrf_token" content="{{ csrf_token() }}">
+</head>
+<body class="sign-up-page">
+    <header>
+      <h1 class="page-title">Sign Up</h1>
+        <div class="container">
+          <nav>
+            <ul>
+              <li><a href="{{ url_for('forgot_password') }}">Forgot password</a></li>
+              <li><a href="{{ url_for('about') }}">About</a></li>
+              {% if session.get('user') %}
+                <!-- Show user settings if logged in -->
+                <li><a href="{{ url_for('user_settings') }}">User Settings</a></li>
+                <li><a href="{{ url_for('logout') }}">Logout</a></li>
+              {% else %}
+                <li><a href="{{ url_for('login') }}">Login</a></li>
+                <li><a href="{{ url_for('sign_up') }}">Sign up</a></li>
+              {% endif %}
+              <li><a href="{{ url_for('home') }}">Home</a></li>
+            </ul>
+          </nav>
+        </div>
+      </header>
+      
+
+    <main id="app">
+        <div class="logo-container">
+            <img src="/static/Logos/chessLogo.png" alt="App Logo" class="app-logo">
+        </div>
+
+        <div class="sign-up-container">
+            <h1>Sign Up</h1>
+            <form id="sign_up_Form" @submit.prevent="submit_Sign_up">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                <label for="first_name">First Name:</label>
+                <input type="text" id="first_name" name="first_name" required v-model="first_name">
+
+                <label for="last_name">Last Name:</label>
+                <input type="text" id="last_name" name="last_name" required v-model="last_name">
+
+                <label for="nickname">Username:</label>
+                <input type="text" id="nickname" name="nickname" required v-model="nickname">
+
+                <label for="email">Email (Gmail):</label>
+                <input type="email" id="email" name="email" required v-model="email">
+
+                <label for="phone_number">Phone Number:</label>
+                <input type="text" id="phone_number" name="phone_number" required v-model="phone_number">
+
+                <label for="country">Country:</label>
+                <input type="text" id="country" name="country" required v-model="country">
+
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required v-model="password">
+
+                <button type="submit">Sign Up</button>
+            </form>
+            <a href="{{ url_for('login') }}" class="login">Login</a>
+            <p id="errorMessage" class="error-message">{{ errorMessage }}</p>
+        </div>
+    </main>
+
+    <footer>
+        <ul>
+            <li><a href="{{ url_for('login') }}" class="login-link">Login</a></li>
+            <li><a href="{{ url_for('sign_up') }}" class="signup-link">Sign Up</a></li>
+        </ul>
+        <img src="/static/Logos/footerChess.png" alt="Bot" class="icon">
+        <p>&copy; 2025 All Rights Reserved</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/vue_sign_up.js') }}" defer></script>
+</body>
+</html>

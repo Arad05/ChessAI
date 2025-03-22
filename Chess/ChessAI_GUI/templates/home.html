@@ -3,22 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChessAI - עמוד ראשי</title>
-    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.min.js"></script>
+    <title>ChessAI - Home Page</title>
+    <script src="https://cdn.jsdelivr.net/npzm/vue@3/dist/vue.global.min.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
 </head>
 <body>
     
     <header>
         <div class="container">
+            <h1 class="page-title">About</h1>
             <nav>
                 <ul>
-                    <li><a href="{{ url_for('about') }}">אודות</a></li>
-                    <li><a href="{{ url_for('login') }}">כניסת משתמש</a></li>
-                    <li><a href="{{ url_for('sign_Up') }}">הרשמה</a></li>
-                    <li><a href="{{ url_for('home') }}">עמוד ראשי</a></li>
+                    {% if not session.get('user') %}
+                        <li><a href="{{ url_for('forgot_password') }}">Forgot password</a></li>
+                    {% endif %}
+                    <li><a href="{{ url_for('about') }}">About</a></li>
+                    {% if session.get('user') %}
+                        <!-- Show user settings if logged in -->
+                        <li><a href="{{ url_for('user_settings') }}">Settings</a></li>
+                        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                        <!-- If current_user exists and is admin, show admin dashboard link -->
+                        {% if current_user and current_user.role == "admin" %}
+                            <li><a href="{{ url_for('admin_dashboard') }}">Admin Page</a></li>
+                        {% endif %}
+                    
+                    {% else %}
+                        <li><a href="{{ url_for('login') }}">Login</a></li>
+                        <li><a href="{{ url_for('sign_up') }}">Sign up</a></li>
+                    {% endif %}
+                    <li><a href="{{ url_for('home') }}">Home</a></li>
                 </ul>
             </nav>
+            
         </div>
     </header>
     
@@ -30,21 +46,21 @@
         </div>
         
         <div class="title-container">
-            <h1 class="title">ChessAI - עמוד ראשי</h1>
-            <p>ברוך הבא! בחר אפשרות:</p>
+            <h1 class="title">ChessAI - Home Page</h1>
+            <p>Welcome! Choose an option:</p>
         </div>
 
         <div class="buttons-container">
             <a href="/play_online" class="play-button" id="play-online" @mouseover="animateButton($event)" @mouseleave="resetButton($event)">
                 <span class="button-content">
                     <img src="https://img.icons8.com/ios/50/000000/worldwide-location.png" alt="Online" class="icon">
-                    לשחק אונליין
+                    Play Online
                 </span>
             </a>
             <a href="/play_bot" class="play-button" id="play-bot" @mouseover="animateButton($event)" @mouseleave="resetButton($event)">
                 <span class="button-content">
                     <img src="/static/Logos/chatbot.png" alt="Bot" class="icon">
-                    לשחק נגד בוט
+                    Play with Bot
                 </span>
             </a>
         </div>
@@ -52,11 +68,11 @@
 
     <footer>
         <ul>
-            <li><a href="{{ url_for('login') }}" class="login-link">כניסת משתמש</a></li>
-            <li><a href="{{ url_for('sign_Up') }}"class="signup-link">הרשמה</a></li>
+            <li><a href="{{ url_for('login') }}" class="login-link">Login</a></li>
+            <li><a href="{{ url_for('sign_up') }}" class="signup-link">Sign Up</a></li>
         </ul>
         <img src="/static/Logos/footerChess.png" alt="Bot" class="icon">
-        <p>&copy; 2025 זכויות יוצרים</p>
+        <p>&copy; 2025 All Rights Reserved</p>
     </footer>
     
     

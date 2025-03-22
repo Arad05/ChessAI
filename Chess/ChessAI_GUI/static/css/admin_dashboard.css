@@ -1,0 +1,305 @@
+/* CSS Variables */
+:root {
+  --primary-color: #007bff;
+   --primary-hover-color: #005fa3; /* Even darker blue for hover effect */
+   --background-color: #f8f9fa;
+   --text-color: #333;
+   --secondary-text-color: #555;
+   --footer-background-color: #1c1c1c;
+   --footer-text-color: #f0f0f0;
+   --nav-hover-color: rgba(0, 123, 255, 0.15); /* Softer hover effect */
+}
+
+html, body {
+   height: 100%;
+   margin: 0;
+   padding: 0;
+   display: flex;
+   flex-direction: column;
+   background: linear-gradient(135deg, #3578e5, #5e42c5); /* Subtle gradient with rich tones */
+   scroll-behavior: smooth;
+   overflow-x: hidden;
+}
+
+/* General Styles */
+body {
+   font-family: 'Helvetica Neue', sans-serif;
+   text-align: center;
+   background: linear-gradient(135deg, #3578e5, #5e42c5); /* Rich gradient */
+   flex: 1;
+   display: flex;
+   flex-direction: column;
+   color: var(--text-color);
+}
+
+ /* Loading spinner animation */
+ .loading-spinner {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: none;
+}
+
+.spinner {
+  border: 12px solid #e0e0e0;
+  border-top: 12px solid var(--primary-color); /* Darker blue spinner */
+  border-radius: 50%;
+  width: 100px;
+  height: 100px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Header */
+header {
+  background-color: var(--primary-color);
+  padding: 12px 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+header nav ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 25px;
+}
+
+header nav ul li {
+  display: inline;
+}
+
+header nav ul li a {
+  color: white;
+  text-decoration: none;
+  font-size: 1.1rem;
+  padding: 10px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Navigation hover effects */
+header nav ul li a:hover {
+  color: var(--primary-hover-color);
+  background-color: var(--nav-hover-color);
+  text-decoration: underline;
+}
+
+header nav ul li a:focus,
+header nav ul li a.active {
+  background-color: var(--primary-hover-color);
+  border-radius: 5px;
+}
+
+/* Main Content */
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 25px;
+}
+.icon {
+  width: 40px;
+  height: 40px;
+  margin-right: 12px;
+}
+
+/* Footer */
+footer {
+  padding: 15px;
+  background-color: var(--footer-background-color);
+  color: var(--footer-text-color);
+  text-align: center;
+  margin-top: auto;
+  width: 100%;
+  position: relative;
+}
+
+/* Footer links */
+footer ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  position: relative;
+  top: 15px; /* Move the links 20px down */
+}
+
+/* Footer link styles */
+footer a {
+  color: var(--footer-text-color);
+  font-size: 1rem;
+  margin: 0 12px;
+  text-decoration: none;
+  border: 2px solid transparent;
+  border-radius: 5px;
+  padding: 8px 12px;
+  transition: all 0.3s ease;
+}
+
+/* Footer link hover */
+footer a:hover {
+  background-color: var(--primary-hover-color);
+  border-color: var(--footer-text-color);
+}
+
+/* Move the login link to 40% of the width */
+footer a.login-link {
+  position: absolute;
+  left: 42%; /* Move it to 40% of the width */
+  transform: translateX(-50%); /* Center it */
+}
+
+/* Move the login link to 40% of the width */
+footer a.signup-link {
+  position: absolute;
+  left: 55%; /* Move it to 40% of the width */
+  transform: translateX(-50%); /* Center it */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .buttons-container {
+      flex-direction: column;
+      gap: 15px;
+  }
+
+  .play-button {
+      font-size: 1.2rem;
+      padding: 12px 28px;
+  }
+}
+
+/* Header animation */
+header nav ul {
+  animation: fadeInDown 0.8s ease-out;
+}
+
+.logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px; /* Adds space below the logo */
+  height: 140px;  /* Ensure it has enough height */
+}
+
+
+.app-logo {
+  width: 120px;  /* Ensure a fixed width */
+  height: 120px;  /* Ensure a fixed height */
+  display: block;  /* Forces the image to be treated as a block element */
+}
+
+
+/* Title container adjustments */
+.title-container {
+  margin-bottom: 25px;
+}
+
+
+.page-title {
+ text-align: center;
+ color: white;
+ font-size: 2rem;
+ margin-bottom: 10px;
+}
+
+@keyframes fadeInDown {
+  from {
+      opacity: 0;
+      transform: translateY(-20px);
+  }
+  to {
+      opacity: 1;
+      transform: translateY(0);
+  }
+}
+  
+  h1 {
+    text-align: center;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    margin-bottom: 20px;
+  }
+  
+  th, td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+  }
+  
+  th {
+    background-color: #4CAF50;
+    color: white;
+  }
+  
+  .action-btn {
+    margin: 0 5px;
+    padding: 5px 10px;
+    border: none;
+    cursor: pointer;
+    border-radius: 3px;
+    color: white;
+  }
+  
+  .action-btn[data-action="promote"] {
+    background-color: #2196F3;
+  }
+  
+  .action-btn[data-action="demote"] {
+    background-color: #FF9800;
+  }
+  
+  .action-btn[data-action="ban"] {
+    background-color: #f44336;
+  }
+  
+  .action-btn[data-action="delete"] {
+    background-color: #9C27B0;
+  }
+  
+  /* Modal styling */
+  .modal {
+    display: none; 
+    position: fixed;
+    z-index: 1000; 
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto; 
+    background-color: rgba(0,0,0,0.4);
+  }
+  
+  .modal-content {
+    background-color: #fefefe;
+    margin: 15% auto; 
+    padding: 20px;
+    border: 1px solid #888;
+    width: 300px;
+    text-align: center;
+  }
+  
+  .close {
+    color: #aaa;
+    float: right;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  

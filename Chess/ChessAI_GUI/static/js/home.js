@@ -1,35 +1,26 @@
 document.addEventListener("DOMContentLoaded", function () {
-
-    document.getElementById('loading').style.display = 'block';
-
-    // Hide the loading spinner once the content is ready
-    document.getElementById('loading').style.display = 'none';
+    gsap.set("main", { opacity: 0 });
     
+    // הצגת התוכן בצורה הדרגתית
+    gsap.to("main", { opacity: 1, duration: 1.2, ease: "power2.out" });
 
-    // הדגשת קישור פעיל בתפריט
-    const currentLocation = window.location.pathname;
-    document.querySelectorAll("nav ul li a").forEach(link => {
-        if (link.getAttribute("href") === currentLocation) {
-            link.classList.add("active");
-        }
-    });
-
-    // אנימציה להופעת הניווט עם GSAP
+    // אנימציה לתפריט ניווט
     gsap.from("nav ul li", {
         opacity: 0,
-        y: -20,
-        duration: 0.8,
-        stagger: 0.15,
-        ease: "power2.out"
+        y: -30,
+        duration: 1,
+        stagger: 0.2,
+        ease: "power3.out"
     });
 
-    // אפקט hover מתקדם לכפתורים
+    // אפקט hover משופר לכפתורים
     document.querySelectorAll(".play-button").forEach(button => {
         button.addEventListener("mouseover", () => {
             gsap.to(button, {
-                scale: 1.1,
-                boxShadow: "0px 10px 20px rgba(0, 0, 0, 0.3)",
-                duration: 0.3,
+                scale: 1.15,
+                rotate: 2,
+                boxShadow: "0px 12px 25px rgba(0, 0, 0, 0.4)",
+                duration: 0.4,
                 ease: "power2.out"
             });
         });
@@ -37,10 +28,29 @@ document.addEventListener("DOMContentLoaded", function () {
         button.addEventListener("mouseleave", () => {
             gsap.to(button, {
                 scale: 1,
-                boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-                duration: 0.3,
+                rotate: 0,
+                boxShadow: "0px 5px 8px rgba(0, 0, 0, 0.2)",
+                duration: 0.4,
                 ease: "power2.out"
             });
         });
+    });
+
+    // אנימציה ללוגו
+    gsap.from(".app-logo", {
+        opacity: 0,
+        y: -50,
+        scale: 0.8,
+        duration: 1.2,
+        ease: "elastic.out(1, 0.6)"
+    });
+
+    // אנימציה לכותרת
+    gsap.from(".title-container", {
+        opacity: 0,
+        y: 20,
+        duration: 1,
+        delay: 0.5,
+        ease: "power2.out"
     });
 });

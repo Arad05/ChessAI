@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChessAI - אודות</title>
+    <title>ChessAI - About</title>
     <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.min.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/about.css') }}">
 </head>
@@ -11,14 +11,30 @@
 
     <header>
         <div class="container">
+            <h1 class="page-title">About</h1>
             <nav>
                 <ul>
-                    <li><a href="{{ url_for('about') }}">אודות</a></li>
-                    <li><a href="{{ url_for('login') }}">כניסת משתמש</a></li>
-                    <li><a href="{{ url_for('sign_Up') }}">הרשמה</a></li>
-                    <li><a href="{{ url_for('home') }}">עמוד ראשי</a></li>
+                    {% if not session.get('user') %}
+                        <li><a href="{{ url_for('forgot_password') }}">Forgot password</a></li>
+                    {% endif %}
+                    <li><a href="{{ url_for('about') }}">About</a></li>
+                    {% if session.get('user') %}
+                        <!-- Show user settings if logged in -->
+                        <li><a href="{{ url_for('user_settings') }}">Settings</a></li>
+                        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                        <!-- If current_user exists and is admin, show admin dashboard link -->
+                        {% if current_user and current_user.role == "admin" %}
+                            <li><a href="{{ url_for('admin_dashboard') }}">Admin Page</a></li>
+                        {% endif %}
+                    
+                    {% else %}
+                        <li><a href="{{ url_for('login') }}">Login</a></li>
+                        <li><a href="{{ url_for('sign_up') }}">Sign up</a></li>
+                    {% endif %}
+                    <li><a href="{{ url_for('home') }}">Home</a></li>
                 </ul>
             </nav>
+            
         </div>
     </header>
 
@@ -28,34 +44,35 @@
         </div>
         
         <div class="title-container">
-            <h1 class="title">ChessAI - אודות</h1>
-            <p>המשחק שלנו מציע חוויית שחמט מתקדמת עם שני מצבים: לשחק נגד בוט או לשחק אונליין.</p>
+            <h1 class="title">ChessAI - About</h1>
+            <p>Our game offers an advanced chess experience with two modes: playing against a bot or playing online.</p>
         </div>
 
         <section class="about-section">
-            <h2>על המשחק</h2>
-            <p>ChessAI הוא משחק שחמט חכם שמנצל בינה מלאכותית ולוחות פיזיים כדי לאפשר לך לשחק מול בוט או מול שחקנים אחרים על ידי חיבור הלוח שלהם לאתר בצורה כזו שהכלי שיזיזו יזיז  פיזית יזוז גם על המסך!. המטרה שלנו היא לספק חוויית שחמט מהנה ומאתגרת עם כלים מתקדמים.</p>
+            <h2>About the Game</h2>
+            <p>ChessAI is a smart chess game that utilizes artificial intelligence and physical boards to allow you to play against a bot or other players by connecting their board to the website. This way, the pieces moved physically will also move on the screen! Our goal is to provide an enjoyable and challenging chess experience with advanced tools.</p>
             
-            <h2>הפיצ'רים שלנו</h2>
+            <h2>Our Features</h2>
             <ul>
-                <li>משחק מול בוט עם רמות קושי שונות</li>
-                <li>אפשרות לשחק אונליין מול שחקנים אחרים על ידי חיבור לוח פיזי אל האתר</li>
-                <li>חוויית משתמש פשוטה וידידותית</li>
-                <li>תמיכה בגרסה ניידת ונגישה לכלל המכשירים</li>
+                <li>Play against a bot with different difficulty levels</li>
+                <li>Option to play online against other players by connecting a physical board to the website</li>
+                <li>Simple and user-friendly experience</li>
+                <li>Mobile-friendly and accessible across all devices</li>
             </ul>
         </section>
     </main>
 
     <footer>
         <ul>
-            <li><a href="{{ url_for('login') }}" class="login-link">כניסת משתמש</a></li>
-            <li><a href="{{ url_for('sign_Up') }}"class="signup-link">הרשמה</a></li>
+            <li><a href="{{ url_for('login') }}" class="login-link">Login</a></li>
+            <li><a href="{{ url_for('sign_up') }}" class="signup-link">Sign Up</a></li>
         </ul>
         <img src="/static/Logos/footerChess.png" alt="Bot" class="icon">
-        <p>&copy; 2025 זכויות יוצרים</p>
+        <p>&copy; 2025 All Rights Reserved</p>
     </footer>
     
 
     <script src="{{ url_for('static', filename='js/about.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/vue_about.js') }}" defer></script>
 </body>
 </html>
