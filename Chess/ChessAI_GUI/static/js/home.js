@@ -1,4 +1,11 @@
 document.addEventListener("DOMContentLoaded", function () {
+
+    document.getElementById('loading').style.display = 'block';
+
+    // Hide the loading spinner once the content is ready
+    document.getElementById('loading').style.display = 'none';
+    
+
     // הדגשת קישור פעיל בתפריט
     const currentLocation = window.location.pathname;
     document.querySelectorAll("nav ul li a").forEach(link => {

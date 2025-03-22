@@ -522,4 +522,3 @@ def playGame():
 
             case _:
                 print("stupid ass nigga I told you to chose somthing. You can ask for help by writing help")
-

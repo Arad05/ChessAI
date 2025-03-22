@@ -120,43 +120,6 @@
      text-transform: capitalize;
  }
  
- /* Buttons */
- .buttons-container {
-     display: flex;
-     justify-content: center;
-     gap: 20px;
-     flex-wrap: wrap;
-     margin-top: 20px;
- }
- 
- .play-button {
-     display: inline-flex;
-     align-items: center;
-     justify-content: center;
-     padding: 18px 35px;
-     background-color: var(--primary-color); /* Darker blue */
-     color: white;
-     text-decoration: none;
-     font-size: 1.4rem;
-     border-radius: 8px;
-     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-     cursor: pointer;
-     transition: all 0.3s ease;
- }
- 
- .play-button:hover {
-     background-color: var(--primary-hover-color); /* Even darker blue */
-     transform: scale(1.03);
- }
- 
- .play-button:active {
-     transform: scale(0.98);
- }
- 
- .button-content {
-     display: flex;
-     align-items: center;
- }
  
  .icon {
      width: 40px;
@@ -164,11 +127,9 @@
      margin-right: 12px;
  }
  
-
-
 /* Footer */
 footer {
-    padding: 15px;
+    padding: 15px; /* Reduce padding to make the footer smaller */
     background-color: var(--footer-background-color);
     color: var(--footer-text-color);
     text-align: center;
@@ -207,35 +168,21 @@ footer a:hover {
     border-color: var(--footer-text-color);
 }
 
-/* Move the login link to 40% of the width */
+/* Move the login link slightly to the right */
 footer a.login-link {
     position: absolute;
-    left: 42%; /* Move it to 40% of the width */
-    transform: translateX(-50%); /* Center it */
+    left: 40%; /* Adjusted to be a little more to the right */
+    transform: translateX(-50%); /* Centerּ it */
 }
 
-/* Move the login link to 40% of the width */
+/* Move the signup link to 62% of the width */
 footer a.signup-link {
     position: absolute;
-    left: 55%; /* Move it to 40% of the width */
+    left: 55%; /* Keep the signup link in place */
     transform: translateX(-50%); /* Center it */
 }
 
 
-
- 
- /* Responsive Design */
- @media (max-width: 768px) {
-     .buttons-container {
-         flex-direction: column;
-         gap: 15px;
-     }
- 
-     .play-button {
-         font-size: 1.2rem;
-         padding: 12px 28px;
-     }
- }
  
  /* Header animation */
  header nav ul {
@@ -253,16 +200,6 @@ footer a.signup-link {
      }
  }
  
- /* Button click effect */
- .play-button:active {
-     transform: scale(0.95);
-     transition: transform 0.1s ease-in-out;
- }
- 
- /* Dynamic button shadow */
- .play-button {
-     transition: all 0.3s ease-in-out;
- }
  
  /* Title animation */
  .title-container {
@@ -300,4 +237,18 @@ footer a.signup-link {
  .title-container {
      margin-bottom: 25px;
  }
+
+ /* Move the login link to 40% of the width */
+footer a.login-link {
+    position: absolute;
+    left: 42%; /* Move it to 40% of the width */
+    transform: translateX(-50%); /* Center it */
+}
+
+/* Move the login link to 40% of the width */
+footer a.signup-link {
+    position: absolute;
+    left: 55%; /* Move it to 40% of the width */
+    transform: translateX(-50%); /* Center it */
+}
  
