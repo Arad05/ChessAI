@@ -82,6 +82,8 @@ const app = Vue.createApp({
 
                 if (result.success) {
                     alert(result.message);
+                    window.location.href = '/';
+                    window.location.reload();
                 } else {
                     alert(result.message);
                 }

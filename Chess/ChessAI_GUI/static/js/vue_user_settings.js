@@ -7,10 +7,7 @@ const app = Vue.createApp({
         name: "Ori",
         lastName: "Kopilov",
         role: "Admin",
-        friends: [
-          { nickname: "NotSamur", name: "Arad Or" },
-          { nickname: "JohnD", name: "John Doe" }
-        ],
+        friends: ["NotSamur", "JohnD", "Extra1", "Extra2", "Extra3", "Extra4"], // Sample data
         country: "Israel",
         stats: { wins: 10, draws: 5, losses: 3 },
         csrf_token: document.querySelector('meta[name="csrf_token"]')
@@ -18,22 +15,41 @@ const app = Vue.createApp({
           : "",
         history: [
           { opponent: "Arad Or", result: "win", date: "2025-03-12 15:30" },
-          { opponent: "John Doe", result: "draw", date: "2025-03-11 20:15" }
+          { opponent: "John Doe", result: "draw", date: "2025-03-11 20:15" },
+          { opponent: "Extra Opp 1", result: "loss", date: "2025-03-10 20:15" },
+          { opponent: "Extra Opp 2", result: "win", date: "2025-03-09 20:15" },
+          { opponent: "Extra Opp 3", result: "win", date: "2025-03-08 20:15" },
+          { opponent: "Extra Opp 4", result: "draw", date: "2025-03-07 20:15" }
         ]
-      }
+      },
+      friendLimit: 5,
+      historyLimit: 5
     };
   },
   computed: {
     roleClass() {
-      // Check if the role exists in the predefined classes, otherwise fallback to 'Rookie'
       const validRoles = ["Rookie", "member", "admin"];
-      if (validRoles.includes(this.user.role)) {
-        return this.user.role;  // Return the role itself to match CSS class
-      }
-      return 'Rookie'; // Fallback if the role is not recognized
+      return validRoles.includes(this.user.role) ? this.user.role : 'Rookie';
+    },
+    limitedHistory() {
+      return this.user.history.slice(0, this.historyLimit);
+    },
+    limitedFriends() {
+      return this.user.friends.slice(0, this.friendLimit);
+    },
+    showMoreFriendsButton() {
+      return this.friendLimit < this.user.friends.length;
+    },
+    showCollapseFriendsButton() {
+      return this.friendLimit > 5;
+    },
+    showMoreHistoryButton() {
+      return this.historyLimit < this.user.history.length;
+    },
+    showCollapseHistoryButton() {
+      return this.historyLimit > 5;
     }
-  }
-  ,
+  },
   methods: {
     updateSettings() {
       fetch('/update_user_settings', {
@@ -56,7 +72,20 @@ const app = Vue.createApp({
         console.error(error);
         alert('Error updating settings.');
       });
+    },
+    showMoreFriends() {
+      this.friendLimit += 5;
+    },
+    collapseFriends() {
+      this.friendLimit = 5;
+    },
+    showMoreHistory() {
+      this.historyLimit += 5;
+    },
+    collapseHistory() {
+      this.historyLimit = 5;
     }
   }
 });
+
 app.mount('#app');

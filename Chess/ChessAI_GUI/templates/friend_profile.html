@@ -56,47 +56,58 @@
         <p>Wins: {{ user.stats.wins }} | Draws: {{ user.stats.draws }} | Losses: {{ user.stats.losses }}</p>
       </div>
 
-      <div class="profile-history">
-        <h3>Game History</h3>
-        <table class="history-table">
-          <thead>
-            <tr>
-              <th>Opponent</th>
-              <th>Result</th>
-              <th>Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for game in user.history %}
-            <tr>
-              <td>{{ game.opponent }}</td>
-              <td class="{{ game.result }}">{{ game.result }}</td>
-              <td>{{ game.date }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
 
       <div class="friend-list-section">
         <h3>Friends</h3>
         <div class="friends-list">
-          {% for friend in user.friends %}
-          <div class="friend-card">
-            <a href="{{ url_for('profile', friend_nickname=friend.nickname) }}">
-              <p>{{ friend.nickname }}</p>
-            </a>
-          </div>
-          {% endfor %}
+            {% for friend in user.friends %}
+            <div class="friend-card">
+                <a href="{{ url_for('profile', friend_nickname=friend.nickname) }}">
+                    <p>{{ friend.nickname }}</p>
+                </a>
+            </div>
+            {% endfor %}
         </div>
+        
+        <button id="showMoreFriends" class="show-more-button">Show More Friends</button>
+        <button id="collapseFriends" class="collapse-button">Collapse Friends</button>
       </div>
-    </div>
+
+      <!-- Game History Section -->
+      <div class="profile-history">
+        <h3>Game History</h3>
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>Opponent</th>
+                    <th>Result</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for game in user.history %}
+                <tr>
+                    <td>
+                        <a href="{{ url_for('profile', friend_nickname=game.opponent_nickname) }}">
+                            {{ game.opponent_nickname }}
+                        </a>
+                    </td>
+                    <td class="{{ game.result }}">{{ game.result }}</td>
+                    <td>{{ game.date }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <button id="showMoreHistory" class="show-more-button">Show More Games</button>
+        <button id="collapseHistory" class="collapse-button">Collapse Games</button>
+      </div>     
   </main>
+
+  
 
   <footer>
     <ul>
-      <li><a href="{{ url_for('login') }}" class="login-link">Login</a></li>
-      <li><a href="{{ url_for('sign_up') }}" class="signup-link">Sign Up</a></li>
     </ul>
     <img src="/static/Logos/footerChess.png" alt="Bot" class="icon">
     <p>&copy; 2025 All Rights Reserved</p>

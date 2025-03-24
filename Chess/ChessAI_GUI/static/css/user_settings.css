@@ -75,6 +75,12 @@ header nav ul li a.active {
     border-radius: 5px;
 }
 
+.settings-container h2 {
+    margin: 10px 0;
+    font-size: 2rem;
+    color: #005fa3;
+  }
+
 main {
     flex: 1;
     display: flex;
@@ -87,23 +93,39 @@ main {
 /* Profile & Settings Container */
 .settings-container {
     background-color: var(--card-bg-color);
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    width: 600px;
+    padding: 30px 40px;
+    border-radius: 16px;
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.15);
+    width: 730px;
+    transition: transform 0.3s ease;
 }
+
+.settings-container .elo-rating,
+.settings-container .username {
+  font-weight: bold;
+}
+
+.settings-container:hover {
+    transform: scale(1.02);
+}
+
 
 .profile-section {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
 }
 
 .profile-picture {
-    width: 140px;
-    height: 140px;
+    width: 160px;
+    height: 160px;
     border-radius: 50%;
-    border: 4px solid var(--primary-color);
-    margin-bottom: 15px;
+    border: 5px solid var(--secondary-color);
+    margin-bottom: 20px;
+    transition: border-color 0.3s ease;
+}
+
+.profile-picture:hover {
+    border-color: var(--primary-hover-color);
 }
 
 .info-section {
@@ -113,29 +135,52 @@ main {
 .info-section form {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 15px;
 }
 
 .info-section label {
     font-weight: bold;
 }
 
+.info-section input[type="text"],
+.info-section input[type="tel"] {
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.info-section input[type="text"]:focus,
+.info-section input[type="tel"]:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
 /* History Table */
 .history-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 10px;
+    margin-top: 15px;
+    font-size: 0.95rem;
 }
 
-.history-table th, .history-table td {
-    border: 1px solid #ddd;
-    padding: 10px;
+.history-table th,
+.history-table td {
+    border: 1px solid var(--card-border-color);
+    padding: 12px;
     text-align: center;
 }
 
 .history-table th {
-    background-color: var(--primary-color);
+    background-color: var(--secondary-color);
     color: white;
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.history-section {
+    margin-top: 30px;
 }
 
 .win {
@@ -156,9 +201,9 @@ main {
 /* Friends Section */
 .friends-section {
     width: 100%;
-    max-width: 650px;
-    margin-top: 20px; /* or adjust as needed */
-    animation: fadeIn 1s ease-in-out;
+    max-width: 700px;
+    margin-top: 35px;
+    animation: fadeIn 1.2s ease-in-out;
 }
 
 .friends-header {
@@ -287,3 +332,90 @@ span.Rookie {
     color: #398ef0; /* Light blue-grey */
     font-weight: bold;
 }
+
+/* Update Button */
+.update-button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 10px;
+    background-color: var(--primary-color);
+    color: white;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.update-button:hover {
+    background-color: var(--primary-hover-color);
+    transform: scale(1.02);
+}
+
+  /* Profile Stats */
+.profile-stats {
+    text-align: center;
+    margin-bottom: 30px;
+}
+.profile-stats h3 {
+    margin-bottom: 10px;
+    font-size: 1.5rem;
+    color: var(--secondary-color);
+}
+.profile-stats p {
+    font-size: 1.1rem;
+}
+
+
+.show-more-button, .collapse-button {
+    display: block;
+    width: 200px;
+    margin: 10px auto;
+    padding: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    border-radius: 5px;
+  }
+  
+  .show-more-button {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  .show-more-button:hover {
+    background-color: #0056b3;
+  }
+  
+  .collapse-button {
+    background-color: #ff4444;
+    color: white;
+  }
+  
+  .collapse-button:hover {
+    background-color: #cc0000;
+  }
+
+  .info-section h3 {
+    margin-bottom: 10px;
+    font-size: 1.5rem;
+    color: #005fa3;
+  }
+
+  .profile-stats h3 {
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+    color: #005fa3;
+  }
+
+  .friends-section h3 {
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+    color: #005fa3;
+  }
+
+  .history-section h3 {
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+    color: #005fa3;
+  }

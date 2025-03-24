@@ -112,10 +112,18 @@ class Admin(Member):
         return False
 
     def delete_user(self, target_email: str, users_db: dict):
-        """Deletes a user from the database."""
+        """Deletes a user from the database and removes them from everyone's friend list."""
         if target_email in users_db:
             deleted_user = users_db.pop(target_email)
-            print(f"User {deleted_user.get('nickname')} has been deleted.")
+            deleted_nickname = deleted_user.get("nickname")
+
+            # Remove the deleted user from all friends lists
+            for user in users_db.values():
+                if "friends" in user and deleted_nickname in user["friends"]:
+                    user["friends"].remove(deleted_nickname)
+
+            print(f"User {deleted_nickname} has been deleted and removed from all friend lists.")
             return True
         return False
+
     

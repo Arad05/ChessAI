@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify, session
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session, current_app
 import os
 import smtplib
 from flask_wtf.csrf import CSRFProtect
@@ -12,6 +12,9 @@ from functools import wraps
 import bleach
 from user_roles import Member, Admin
 from datetime import datetime, timedelta
+from db import close_db, get_db
+import psycopg2.extras
+import random, string
 
 # Create Flask instance
 app = Flask(__name__, template_folder="ChessAI_GUI/templates", static_folder="ChessAI_GUI/static")
@@ -20,12 +23,20 @@ print(os.path.join(os.getcwd(), "ChessAI_GUI/static"))
 
 # Set secret key
 app.secret_key = os.environ.get("FLASK_SECRET_KEY") or os.urandom(24)
+app.config.from_pyfile('config.py')
 
 
 
 # Initialize CSRF protection
 csrf = CSRFProtect(app)
 
+
+def create_app():
+    app = Flask(__name__)
+    # configure app: app.config[...] ...
+    
+    app.teardown_appcontext(close_db)
+    return app
 
 
 # Fake users database for demo purposes with multiple users
@@ -79,13 +90,7 @@ users_db = {
 }
 
 
-
-# Utility function to sanitize input
-def sanitize(input_value):
-    if isinstance(input_value, str):
-        return bleach.clean(input_value)
-    return input_value
-
+#
 @app.context_processor
 def inject_current_user():
     current_user = None
@@ -95,65 +100,70 @@ def inject_current_user():
     return dict(current_user=current_user)
 
 
+# Utility function to sanitize input
+def sanitize(input_value):
+    if isinstance(input_value, str):
+        return bleach.clean(input_value)
+    return input_value
+
+
 #Home page
 @app.route('/')
 def home():
     return render_template('home.html')
 
 
-
-# Sign - up functionExempt the JSON-based sign-up route from CSRF protection
-@csrf.exempt
+#Sign up page
 @app.route('/sign_up', methods=['GET', 'POST'])
+@csrf.exempt
 def sign_up():
     if 'user' in session:
         return redirect(url_for('home'))
-
+    
     if request.method == 'POST':
         try:
             data = request.get_json()
-
-            # Sanitize all input values
             email = sanitize(data.get('email'))
-            password = data.get('password')
+            password = data.get('password')  # No hashing, using as provided
             first_name = sanitize(data.get('first_name'))
             last_name = sanitize(data.get('last_name'))
             nickname = sanitize(data.get('nickname'))
             phone_number = sanitize(data.get('phone_number'))
             country = sanitize(data.get('country'))
-
-            # Check if email already exists
-            if email in users_db:
+            
+            db = get_db()
+            cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+            
+            # Check if email exists
+            cur.execute("SELECT email FROM users WHERE email = %s", (email,))
+            if cur.fetchone():
                 return jsonify({"success": False, "message": "האימייל כבר קיים במערכת."})
-
+            
             # Check that the nickname is unique
-            for user in users_db.values():
-                if user.get('nickname') == nickname:
-                    return jsonify({"success": False, "message": "הניקניימ כבר בשימוש."})
-
-            # Hash the password before storing
-            hashed_password = generate_password_hash(password)
-
-            # Store the new user with the nickname
-            users_db[email] = {
-                "password": hashed_password,
-                "first_name": first_name,
-                "last_name": last_name,
-                "nickname": nickname,
-                "phone_number": phone_number,
-                "country": country,
-                "games_history": [],
-                "friends": [],
-                "role": "user"
-            }
-
-            return jsonify({"success": True, "message": "המשתמש נרשם בהצלחה!"})
+            cur.execute("SELECT nickname FROM users WHERE nickname = %s", (nickname,))
+            if cur.fetchone():
+                return jsonify({"success": False, "message": "הניקניימ כבר בשימוש."})
+            
+            # Insert the password directly without hashing.
+            cur.execute("""
+                INSERT INTO users (
+                    email, password, first_name, last_name, nickname, 
+                    phone_number, country, rating, role
+                )
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """, (email, password, first_name, last_name, nickname, phone_number, country, 1200, 'user'))
+            db.commit()
+            
+            # Create session to log the user in immediately
+            session['user'] = email
+            session['role'] = 'user'
+            
+            return jsonify({"success": True, "message": "המשתמש נרשם ונכנס בהצלחה!"})
         except Exception as e:
-            print(f"Error in sign up: {e}")
+            current_app.logger.error(f"Error in sign up: {e}")
             return jsonify({"success": False, "message": "שגיאה בשרת"}), 500
-
+    
     return render_template('sign_up.html')
-
 
 
 #About page
@@ -162,38 +172,53 @@ def about():
     return render_template('about.html')
 
 
-
-#Login page
+# Login page
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if 'user' in session:
         email = session['user']
-        user = users_db.get(email)
+        db = get_db()
+        cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur.execute("SELECT * FROM users WHERE email = %s", (email,))
+        user = cur.fetchone()
+        print(f"User from session: {user}")
+
         if user and user["ban_end"] and user["ban_end"] > datetime.now():
             return jsonify({"success": False, "message": "You are banned until " + user["ban_end"].strftime('%Y-%m-%d %H:%M:%S')})
         return redirect(url_for('home'))
-    
-    if request.method == 'POST':
-        email = sanitize(request.form.get('email'))
-        password = request.form.get('password')
 
-        if email in users_db:
-            user = users_db[email]
-            if check_password_hash(user['password'], password):
-                if user["ban_end"] and user["ban_end"] > datetime.now():
-                    return jsonify({"success": False, "message": "You are banned until " + user["ban_end"].strftime('%Y-%m-%d %H:%M:%S')})
-                session['user'] = email
-                session['role'] = user['role']
-                return jsonify({"success": True})
-            else:
-                return jsonify({"success": False, "message": "Incorrect email or password"})
+    if request.method == 'POST':
+        # Remove accidental whitespace from the inputs.
+        email = sanitize(request.form.get('email')).strip()
+        password = request.form.get('password').strip()
+
+        # Debug prints
+        print(f"Email entered: {email!r}")
+        print(f"Password entered: {password!r}")
+
+        db = get_db()
+        cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur.execute("SELECT * FROM users WHERE email = %s", (email,))
+        user = cur.fetchone()
+
+        print(f"User from DB: {user}")
+        if user:
+            print(f"Stored password: {user['password']}")
+
+        # Compare passwords directly (ONLY FOR TESTING, NOT SECURE)
+        if user and user['password'] == password:
+            print(f"User authenticated: {user}")
+            if user["ban_end"] and user["ban_end"] > datetime.now():
+                return jsonify({"success": False, "message": "You are banned until " + user["ban_end"].strftime('%Y-%m-%d %H:%M:%S')})
+
+            session['user'] = email
+            session['role'] = user['role']
+            return jsonify({"success": True, "message": "Login successful!"})
         else:
-            return jsonify({"success": False, "message": "User does not exist"})
+            print("Authentication failed: Incorrect email or password.")
+            return jsonify({"success": False, "message": "Incorrect email or password"})
 
     return render_template('login.html')
-
-
-
 
 
 #Logout
@@ -203,39 +228,32 @@ def logout():
     return redirect(url_for('login'))
 
 
-
 #Forgot password page
 @app.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():
-
-
-    # Sanitize token input
     token = sanitize(request.args.get('token')) or sanitize(request.form.get('token'))
-
+    
     if request.method == 'POST':
-
-        # If a token is present, treat this POST as a password reset.
+        db = get_db()
+        cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         if token:
             new_password = request.form.get('new_password')
             if token != session.get('reset_token'):
                 return jsonify({"success": False, "message": "Invalid or expired token."})
-            
-            # Use the email stored in session to update the password.
             email = session.get('user')
-
-            if email in users_db:
-                users_db[email]['password'] = generate_password_hash(new_password)
+            cur.execute("SELECT email FROM users WHERE email = %s", (email,))
+            if cur.fetchone():
+                # Directly update the password without hashing.
+                cur.execute("UPDATE users SET password = %s WHERE email = %s", (new_password, email))
+                db.commit()
                 session.pop('reset_token', None)
                 return jsonify({"success": True, "message": "הסיסמה שונתה בהצלחה!"})
             else:
                 return jsonify({"success": False, "message": "משתמש לא קיים."})
-            
         else:
-
-            # Otherwise, treat it as a request to send a reset email.
             email = sanitize(request.form.get('email'))
-
-            if email in users_db:
+            cur.execute("SELECT email FROM users WHERE email = %s", (email,))
+            if cur.fetchone():
                 reset_token = ''.join(random.choices(string.ascii_letters + string.digits, k=20))
                 session['reset_token'] = reset_token
                 send_reset_email(email, reset_token)
@@ -244,7 +262,6 @@ def forgot_password():
                 return jsonify({"success": False, "message": "האימייל לא נמצא במערכת."})
     
     return render_template('forgot_password.html', token=token)
-
 
 
 #Reset password function
@@ -275,15 +292,20 @@ def send_reset_email(user_email, reset_token):
         print(f"Error sending email: {e}")
 
 
-
 # Updated function to get the current logged-in user based on session data and the fake DB
 def get_current_user():
     email = session.get('user')
-    if not email or email not in users_db:
+    if not email:
         return None
-    
-    user_info = users_db[email]
 
+    db = get_db()
+    cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur.execute("SELECT * FROM users WHERE email = %s", (email,))
+    user_info = cur.fetchone()
+    if not user_info:
+        return None
+
+    # Create a User object (assuming your User class accepts these parameters)
     user = User(
         email=email,
         password=user_info["password"],
@@ -293,26 +315,16 @@ def get_current_user():
         country=user_info.get("country", ""),
         nickname=user_info.get("nickname", "")
     )
-
     user.rating = user_info.get("rating", 1200)
-    user.games_history = user_info.get("games_history", [])
-    user.role = user_info.get("role", "user")  # Ensure role is included
+    user.role = user_info.get("role", "user")
+    user.online_status = user_info.get("online_status", False)
     
-    # Set role from session if necessary
-    user.role = session.get('role', user.role)
-
-    # Build a list of friend objects using their nickname. This is a simplified version and assumes that the nickname is unique.
-    friends_list = []
-    for friend_nickname in user_info.get("friends", []):
-        friend_data = next((data for data in users_db.values() if data.get("nickname") == friend_nickname), None)
-        if friend_data:
-            friends_list.append({
-                "nickname": friend_data.get("nickname", ""),
-                "name": f"{friend_data.get('first_name', '')} {friend_data.get('last_name', '')}"
-            })
-    user.friends = friends_list
-
+    # Use JSON columns directly (they're already lists/arrays)
+    user.games_history = user_info.get("games_history", [])
+    user.friends = user_info.get("friends", [])
+    
     return user
+
 
 
 # User settings page
@@ -325,7 +337,6 @@ def user_settings():
     if not user:
         return redirect(url_for('login'))
     
-    # Pass user data (including the rating) to the front end.
     user_data = {
         'nickname': user.nickname,
         'phone': user.phone_number,
@@ -335,9 +346,9 @@ def user_settings():
         'rating': user.rating,
         'role': user.role,
         'stats': {
-            'wins': sum(1 for game in user.games_history if game['result'] == 'win'),
-            'draws': sum(1 for game in user.games_history if game['result'] == 'draw'),
-            'losses': sum(1 for game in user.games_history if game['result'] == 'loss')
+            'wins': sum(1 for game in user.games_history if game.get('result') == 'win'),
+            'draws': sum(1 for game in user.games_history if game.get('result') == 'draw'),
+            'losses': sum(1 for game in user.games_history if game.get('result') == 'loss')
         },
         'history': user.games_history,
         'friends': user.friends
@@ -355,43 +366,55 @@ def update_user_settings():
         return jsonify({'success': False, 'error': 'No data provided'}), 400
 
     email = session.get('user')
-    if not email or email not in users_db:
+    if not email:
         return jsonify({'success': False, 'error': 'User not found'}), 400
 
-    # Sanitize input values before updating the DB.
-    users_db[email]['phone_number'] = sanitize(data.get('phone', users_db[email].get('phone_number')))
-    users_db[email]['first_name'] = sanitize(data.get('name', users_db[email].get('first_name')))
-    users_db[email]['last_name'] = sanitize(data.get('lastName', users_db[email].get('last_name')))
-    users_db[email]['country'] = sanitize(data.get('country', users_db[email].get('country')))
+    db = get_db()
+    cur = db.cursor()
+    phone_number = sanitize(data.get('phone', ''))
+    first_name = sanitize(data.get('name', ''))
+    last_name = sanitize(data.get('lastName', ''))
+    country = sanitize(data.get('country', ''))
+    
+    cur.execute("""
+        UPDATE users 
+        SET phone_number = %s, first_name = %s, last_name = %s, country = %s 
+        WHERE email = %s
+    """, (phone_number, first_name, last_name, country, email))
+    db.commit()
 
     return jsonify({'success': True, 'message': 'User settings updated successfully!'})
 
 
-
+# View a friend's profile
 @app.route('/profile/<friend_nickname>')
 def profile(friend_nickname):
     if 'user' not in session:
         return redirect(url_for('login'))
-
+    
     friend_nickname = sanitize(friend_nickname)
-    friend_email = None
-    friend_info = None
-
-    for email, info in users_db.items():
-        if info.get('nickname') == friend_nickname:
-            friend_email = email
-            friend_info = info
-            break
-
+    db = get_db()
+    cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    
+    # Retrieve the friend's info from the users table
+    cur.execute("SELECT * FROM users WHERE nickname = %s", (friend_nickname,))
+    friend_info = cur.fetchone()
     if not friend_info:
         return "User not found", 404
 
+    # Compute game stats from the JSON column 'games_history'
+    games = friend_info.get('games_history', [])
     stats = {
-        'wins': sum(1 for game in friend_info.get("games_history", []) if game['result'] == 'win'),
-        'draws': sum(1 for game in friend_info.get("games_history", []) if game['result'] == 'draw'),
-        'losses': sum(1 for game in friend_info.get("games_history", []) if game['result'] == 'loss')
+        'wins': sum(1 for game in games if game.get('result') == 'win'),
+        'draws': sum(1 for game in games if game.get('result') == 'draw'),
+        'losses': sum(1 for game in games if game.get('result') == 'loss')
     }
-
+    
+    # Use the JSON column 'friends' directly and convert each friend string into a dict.
+    friends_list = friend_info.get('friends', [])
+    if isinstance(friends_list, list) and friends_list and isinstance(friends_list[0], str):
+        friends_list = [{'nickname': friend} for friend in friends_list]
+    
     friend_data = {
         'nickname': friend_info.get('nickname', ''),
         'name': friend_info.get('first_name', ''),
@@ -400,25 +423,12 @@ def profile(friend_nickname):
         'country': friend_info.get('country', ''),
         'rating': friend_info.get('rating', 1200),
         'stats': stats,
-        'history': friend_info.get("games_history", []),
-        'friends': [],
+        'history': games,  # Directly using the games_history JSON data
+        'friends': friends_list,  # Now a list of dicts, each with a "nickname" key
         'role': friend_info.get('role', 'user')
     }
-
-    # Fetch friends data
-    friends_list = []
-
-    for f_nickname in friend_info.get("friends", []):
-        f_data = next((data for data in users_db.values() if data.get("nickname") == f_nickname), None)
-        if f_data:
-            friends_list.append({
-                "nickname": f_data.get("nickname", ""),
-                "name": f"{f_data.get('first_name', '')} {f_data.get('last_name', '')}"
-            })
-    friend_data['friends'] = friends_list
-
+    
     return render_template("friend_profile.html", user=friend_data)
-
 
 
 
@@ -431,7 +441,6 @@ def play_online():
     return render_template('play_online.html')
 
 
-
 # Play offline againts bot page
 @app.route('/play_bot')
 def play_bot():
@@ -439,7 +448,6 @@ def play_bot():
         return redirect(url_for('login'))
 
     return render_template('play_bot.html')
-
 
 
 # New route to record a game result.
@@ -513,138 +521,120 @@ def record_game():
     return jsonify({'success': True, 'message': 'Game recorded and ratings updated!'}), 200
 
 
-
 # ---------------------------
 # New endpoint: Promote a user to member
 # ---------------------------
 # This endpoint handles two cases:
 #   1. Admin-provided: an admin (by username/email) promotes a user.
-#   2. Payment-based: a user pays (minimum $5 or equivalent) and is promoted automatically.
+#   2. Payment-based: a user pays (minimum $5 or equivalent) and is promoted automatically(NOT IMPLEMENTED YET).
 # The payment-based promotion is not implemented in this demo.
+# Promote to member endpoint (now using the actual DB)
 @app.route('/promote_to_member', methods=['POST'])
 def promote_to_member():
     data = request.get_json()
-
-    # Case 1: Admin promotion (requires admin_email and target_email)
+    db = get_db()
+    cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    
     if "target_email" in data:
-        # Check if the current logged-in user is an admin
         logged_in_user_email = session.get('user')
         if not logged_in_user_email:
             return jsonify({"success": False, "message": "לא מחובר למערכת"}), 403
-
-        admin_user = users_db.get(logged_in_user_email)
-        if admin_user is None or admin_user.get("role") != "admin":
+        
+        # Check that the logged-in user is an admin
+        cur.execute("SELECT role FROM users WHERE email = %s", (logged_in_user_email,))
+        admin_user = cur.fetchone()
+        if not admin_user or admin_user.get("role") != "admin":
             return jsonify({"success": False, "message": "הרשאות מנהל דרושות."}), 403
         
         target_email = sanitize(data.get("target_email"))
-        target_user = users_db.get(target_email)
-        
+        cur.execute("SELECT role, nickname FROM users WHERE email = %s", (target_email,))
+        target_user = cur.fetchone()
         if not target_user:
             return jsonify({"success": False, "message": "המשתמש לא נמצא."}), 404
-        if target_user.get("role", "user") != "user":
+        if target_user.get("role") != "user":
             return jsonify({"success": False, "message": "משתמש זה כבר קיים כ-member או admin."}), 400
         
-        # Promote the target user
-        target_user["role"] = "member"
+        cur.execute("UPDATE users SET role = 'member' WHERE email = %s", (target_email,))
+        db.commit()
         return jsonify({"success": True, "message": f"{target_user.get('nickname')} promoted to member by admin."})
-
-    # Case 2: Payment-based promotion (not implemented in this demo)
-    elif "target_email" in data and "payment_amount" in data and "currency" in data:
-        target_email = sanitize(data.get("target_email"))
-        payment_amount = float(data.get("payment_amount"))
-        currency = data.get("currency").strip().upper()
-
-        # Simple conversion rates relative to USD (for example purposes only)
-        conversion_rates = {
-            "USD": 1.0,
-            "EUR": 1.1,
-            "ILS": 0.28
-        }
-        rate = conversion_rates.get(currency, None)
-        if rate is None:
-            return jsonify({"success": False, "message": "מטבע לא נתמך."}), 400
-        
-        # Convert the payment to USD equivalent
-        usd_equiv = payment_amount * rate
-        if usd_equiv < 5:
-            return jsonify({"success": False, "message": "Payment is less than the required amount."}), 400
-        
-        # Promote the user if they exist and are not already a member/admin
-        target_user = users_db.get(target_email)
-        if not target_user:
-            return jsonify({"success": False, "message": "המשתמש לא נמצא."}), 404
-        if target_user.get("role", "user") != "user":
-            return jsonify({"success": False, "message": "משתמש זה כבר קיים כ-member או admin."}), 400
-        
-        target_user["role"] = "member"
-        return jsonify({"success": True, "message": f"{target_user.get('nickname')} promoted to member via payment."})
-
+    
     return jsonify({"success": False, "message": "Invalid request data."}), 400
 
 
-
-
-# ---------------------------
-# New endpoint: Admin Dashboard
-# ---------------------------
+# Admin Dashboard endpoint updated to use the database
 @app.route('/admin_dashboard', methods=['GET', 'POST'])
 def admin_dashboard():
     current_user = get_current_user()
     if not current_user or current_user.role != "admin":
         return redirect(url_for('login'))
     
-    # For GET, display all users
+    db = get_db()
+    cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    
     if request.method == "GET":
-        admin_instance = Admin(
-            email=session["user"],
-            password="",
-            first_name=current_user.first_name,
-            last_name=current_user.last_name,
-            phone_number=current_user.phone_number,
-            country=current_user.country,
-            nickname=current_user.nickname
-        )
-        all_users = admin_instance.view_all_users(users_db)
+        # Query all users from the actual DB
+        cur.execute("SELECT email, nickname, role FROM users")
+        all_users = cur.fetchall()
         return render_template("admin_dashboard.html", users=all_users)
     
-    # For POST, process admin actions
     if request.method == "POST":
         action = request.form.get("action")
-        target_email = request.form.get("target_email")
-        admin_instance = Admin(
-            email=session["user"],
-            password="",
-            first_name=current_user.first_name,
-            last_name=current_user.last_name,
-            phone_number=current_user.phone_number,
-            country=current_user.country,
-            nickname=current_user.nickname
-        )
+        target_email = sanitize(request.form.get("target_email"))
         message = ""
+        
         if action == "promote":
-            success = admin_instance.promote_user(target_email, users_db)
-            message = "Promoted successfully" if success else "Promotion failed"
+            cur.execute("UPDATE users SET role = 'member' WHERE email = %s AND role = 'user'", (target_email,))
+            message = "Promoted successfully" if cur.rowcount else "Promotion failed"
+        
         elif action == "demote":
-            success = admin_instance.demote_member(target_email, users_db)
-            message = "Demoted successfully" if success else "Demotion failed"
+            cur.execute("UPDATE users SET role = 'user' WHERE email = %s AND role = 'member'", (target_email,))
+            message = "Demoted successfully" if cur.rowcount else "Demotion failed"
+
         elif action == "ban":
             try:
                 duration = int(request.form.get("duration"))
-            except:
+            except ValueError:
                 duration = 0
-            success = admin_instance.ban_user(target_email, duration, users_db)
-            message = "User banned" if success else "Ban failed"
+
+            if duration > 0:
+                cur.execute("UPDATE users SET ban_end = (NOW() + interval '%s minutes') WHERE email = %s", (duration, target_email))
+                message = "User banned" if cur.rowcount else "Ban failed"
+            else:
+                message = "Invalid duration"
+
         elif action == "unban":
-            success = admin_instance.unban_user(target_email, users_db)
-            message = "User unbanned" if success else "Unban failed"
+            cur.execute("UPDATE users SET ban_end = NULL WHERE email = %s", (target_email,))
+            message = "User unbanned" if cur.rowcount else "Unban failed"
+
         elif action == "delete":
-            success = admin_instance.delete_user(target_email, users_db)
-            message = "User deleted" if success else "Delete failed"
+            # Get the nickname of the user to be deleted
+            cur.execute("SELECT nickname FROM users WHERE email = %s", (target_email,))
+            user = cur.fetchone()
+
+            if user:
+                deleted_nickname = user["nickname"]
+
+                # Remove the user from all friends lists
+                cur.execute("""
+                    UPDATE users
+                    SET friends = friends - %s
+                    WHERE friends ? %s
+                """, (deleted_nickname, deleted_nickname))
+
+                # Delete the user
+                cur.execute("DELETE FROM users WHERE email = %s", (target_email,))
+                
+                message = "User deleted" if cur.rowcount else "Delete failed"
+            else:
+                message = "User not found"
+
         else:
             message = "Unknown action"
+        
+        db.commit()
         return jsonify({"success": True, "message": message})
 
-    
+
 
 
 if __name__ == "__main__":

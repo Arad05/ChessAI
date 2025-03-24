@@ -52,8 +52,9 @@
       <div class="profile-section">
         <img src="/static/Logos/user.png" alt="Profile Picture" class="profile-picture">
         <h2>{{ user.name }} {{ user.lastName }}</h2>
-        <p>Nickname: {{ user.nickname }}</p>
-        <p>Role: <span :class="roleClass">{{ user.role }}</span></p>
+        <p class="elo-rating">ELO Rating: {{ user.rating }}</p>
+        <p class="username">Username: {{ user.nickname }}</p>
+        <p><strong>Role:</strong> <span :class="roleClass">{{ user.role }}</span></p>
       </div>
 
       <div class="info-section">
@@ -79,7 +80,7 @@
             <label>Country:</label>
             <input type="text" v-model="user.country">
           </div>
-          <div class="stats">
+          <div class="profile-stats">
             <h3>Game Stats</h3>
             <p>Wins: {{ user.stats.wins }} | Draws: {{ user.stats.draws }} | Losses: {{ user.stats.losses }}</p>
           </div>
@@ -87,46 +88,61 @@
         </form>
       </div>
 
-      <div class="history-section">
-        <h3>Game History</h3>
-        <table class="history-table">
-          <thead>
-            <tr>
-              <th>Opponent</th>
-              <th>Result</th>
-              <th>Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="game in user.history" :key="game.date">
-              <td>{{ game.opponent }}</td>
-              <td :class="game.result">{{ game.result }}</td>
-              <td>{{ game.date }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+  <!-- Friends Section -->
+  <div class="friends-section">
+    <h3>Friends</h3>
+    <div class="friends-list">
+      <div class="friend-card" v-for="friend in limitedFriends" :key="friend">
+        <a :href="`/profile/${friend}`">
+          <p>{{ friend }}</p>
+        </a>
+      </div>        
     </div>
 
-    <div class="friends-section">
-      <h3>Friends</h3>
-      <div class="friends-list">
-        <div class="friend-card" v-for="friend in user.friends" :key="friend.nickname">
-          <a :href="`/profile/${friend.nickname}`">
-            <p>{{ friend.nickname }}</p>
-            <p>ELO Rating: {{ user.rating }}</p>
-          </a>
-        </div>
-      </div>
-    </div>
+    <button v-if="showMoreFriendsButton" class="show-more-button" @click="showMoreFriends">
+      Show More Friends
+    </button>
+    
+    <button v-if="showCollapseFriendsButton" class="collapse-button" @click="collapseFriends">
+      Collapse Friends
+    </button>
+  </div>
+
+  <!-- History Section -->
+  <div class="history-section">
+    <h3>Game History</h3>
+    <table class="history-table">
+      <thead>
+        <tr>
+          <th>Opponent</th>
+          <th>Result</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="game in limitedHistory" :key="game.date">
+          <td><a :href="`/profile/${game.opponent_nickname}`">{{ game.opponent_nickname }}</a></td>
+          <td :class="game.result">{{ game.result }}</td>
+          <td>{{ game.date }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <button v-if="showMoreHistoryButton" class="show-more-button" @click="showMoreHistory">
+      Show More Games
+    </button>
+
+    <button v-if="showCollapseHistoryButton" class="collapse-button" @click="collapseHistory">
+      Collapse Games
+    </button>
+  </div>
+
     
   </main>
   {% endraw %}
 
   <footer>
     <ul>
-      <li><a href="{{ url_for('login') }}" class="login-link">Login</a></li>
-      <li><a href="{{ url_for('sign_up') }}" class="signup-link">Sign Up</a></li>
     </ul>
     <img src="/static/Logos/footerChess.png" alt="Bot" class="icon">
     <p>&copy; 2025 All Rights Reserved</p>

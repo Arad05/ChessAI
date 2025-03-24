@@ -13,11 +13,9 @@
             <h1 class="page-title">About</h1>
             <nav>
                 <ul>
-<<<<<<< HEAD
                     <li><a href="about.html">אודות</a></li>
                     <li><a href="#">כניסת משתמש</a></li>
                     <li><a href="#">הרשמה</a></li>
-=======
                     {% if not session.get('user') %}
                         <li><a href="{{ url_for('forgot_password') }}">Forgot password</a></li>
                     {% endif %}
@@ -36,7 +34,6 @@
                         <li><a href="{{ url_for('sign_up') }}">Sign up</a></li>
                     {% endif %}
                     <li><a href="{{ url_for('home') }}">Home</a></li>
->>>>>>> f070f856a4fccc3c3811b992f1a71294aa670cd9
                 </ul>
             </nav>
             
@@ -54,9 +51,10 @@
     </main>
 
     <footer>
-        <a href="#" class="footer-link">כניסת משתמש</a>
-        <a href="#" class="footer-link">הרשמה</a>
-        <p>&copy; 2025 זכויות יוצרים</p>
+        <ul>
+        </ul>
+        <img src="/static/Logos/footerChess.png" alt="Bot" class="icon">
+        <p>&copy; 2025 All Rights Reserved</p>
     </footer>
 
     <script src="{{ url_for('static', filename='js/play_online.js') }}" defer></script>

@@ -19,6 +19,7 @@ html, body {
     background: linear-gradient(135deg, #3578e5, #5e42c5); /* Subtle gradient with rich tones */
     scroll-behavior: smooth;
     overflow-x: hidden;
+    
 }
 
 /* General Styles */
