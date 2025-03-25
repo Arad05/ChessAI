@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Clan Page</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/clan.css') }}">
+  <!-- Include Vue and GSAP -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+  
+</head>
+<body>
+  <!-- Navigation remains unchanged -->
+  <header>
+    <div class="container">
+        <h1 class="page-title">Clan</h1>
+        <nav>
+            <ul>
+                {% if not session.get('user') %}
+                    <li><a href="{{ url_for('forgot_password') }}">Forgot password</a></li>
+                {% endif %}
+                <li><a href="{{ url_for('about') }}">About</a></li>
+                {% if session.get('user') %}
+                    <li><a href="{{ url_for('user_settings') }}">Settings</a></li>
+                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                    {% if current_user and current_user.role == "admin" %}
+                        <li><a href="{{ url_for('admin_dashboard') }}">Admin Page</a></li>
+                    {% endif %}
+                    {% if session.get('role') in ['admin', 'mod', 'member'] %}
+                        <li><a href="{{ url_for('clan_page') }}">Clan</a></li>
+                    {% endif %}
+                {% else %}
+                    <li><a href="{{ url_for('login') }}">Login</a></li>
+                    <li><a href="{{ url_for('sign_up') }}">Sign up</a></li>
+                {% endif %}
+                <li><a href="{{ url_for('home') }}">Home</a></li>
+            </ul>
+        </nav>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main id="clan-app">
+    <div class="settings-container">
+      <h1 class="page-title">Clan Information</h1>
+      {% if clan %}
+        <div class="clan-card">
+          <div class="clan-header">
+            <h2>{{ clan.name }}</h2>
+          </div>
+          <div class="clan-body">
+            <p>
+              <strong>About:</strong>
+              <span class="detail-text about-text">{{ clan.about }}</span>
+            </p>
+            <p>
+              <strong>ELO Cap:</strong>
+              <span class="detail-text elo-cap-text">{{ clan.required_elo }}</span>
+            </p>
+            <p>
+              <strong>Average ELO:</strong>
+              <span class="detail-text average-elo-text">
+                {% if clan.average_elo %}{{ clan.average_elo }}{% else %}N/A{% endif %}
+              </span>
+            </p>
+            <p>
+              <strong>Members Count:</strong>
+              <span class="detail-text members-count-text">
+                {{ members_details|length }} / 50
+              </span>
+            </p>
+            <p>
+              <strong>Leader:</strong>
+              <span class="leader-text">{{ clan_admin }}</span>
+            </p>
+            <div class="members-section">
+              <h3>Clan Members</h3>
+              {% if members_details %}
+                <ul>
+                  <!-- Inside your members list loop -->
+                  {% for member in members_details %}
+                  <li class="member-item">
+                    <a href="{{ url_for('profile', friend_nickname=member.nickname) }}" class="member-link">
+                      {{ member.nickname }}
+                    </a>
+                    - <span class="role" style="color: {% if member.role == 'member' %}goldenrod
+                                                    {% elif member.role == 'mod' %}blue
+                                                    {% elif member.role in ['admin', 'Leader'] %}red
+                                                    {% else %}black{% endif %};">
+                        {{ member.role }}
+                      </span>
+                    - Rating: {{ member.rating }}
+                    <!-- Action buttons: show if current user is Leader or mod and not the same as the member -->
+                    {% if current_user.clan_role in ['Leader', 'mod'] and member.nickname != current_user.nickname %}
+                      <div class="action-buttons">
+                        {% if current_user.clan_role == 'Leader' %}
+                          {% if member.role == 'member' %}
+                            <form method="post" action="{{ url_for('clan_action') }}" class="action-form">
+                              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                              <input type="hidden" name="action" value="promote">
+                              <input type="hidden" name="target" value="{{ member.nickname }}">
+                              <button type="submit" class="btn promote-btn">Promote</button>
+                            </form>
+                            <form method="post" action="{{ url_for('clan_action') }}" class="action-form">
+                              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                              <input type="hidden" name="action" value="kick">
+                              <input type="hidden" name="target" value="{{ member.nickname }}">
+                              <button type="submit" class="btn kick-btn">Kick</button>
+                            </form>
+                          {% elif member.role == 'mod' %}
+                            <form method="post" action="{{ url_for('clan_action') }}" class="action-form">
+                              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                              <input type="hidden" name="action" value="demote">
+                              <input type="hidden" name="target" value="{{ member.nickname }}">
+                              <button type="submit" class="btn demote-btn">Demote</button>
+                            </form>
+                            <form method="post" action="{{ url_for('clan_action') }}" class="action-form">
+                              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                              <input type="hidden" name="action" value="kick">
+                              <input type="hidden" name="target" value="{{ member.nickname }}">
+                              <button type="submit" class="btn kick-btn">Kick</button>
+                            </form>
+                          {% endif %}
+                        {% elif current_user.clan_role == 'mod' %}
+                          {% if member.role == 'member' %}
+                            <form method="post" action="{{ url_for('clan_action') }}" class="action-form">
+                              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                              <input type="hidden" name="action" value="promote">
+                              <input type="hidden" name="target" value="{{ member.nickname }}">
+                              <button type="submit" class="btn promote-btn">Promote</button>
+                            </form>
+                            <form method="post" action="{{ url_for('clan_action') }}" class="action-form">
+                              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                              <input type="hidden" name="action" value="kick">
+                              <input type="hidden" name="target" value="{{ member.nickname }}">
+                              <button type="submit" class="btn kick-btn">Kick</button>
+                            </form>
+                          {% endif %}
+                        {% endif %}
+                      </div>
+                    {% endif %}
+                  </li>
+                  {% endfor %}
+
+                </ul>
+              {% else %}
+                <p>No members found.</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% else %}
+        <div class="no-clan">
+          <p>You are not in a clan. Search for a clan by name:</p>
+          <form id="clan-search-form" method="POST" action="{{ url_for('clan_page') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="text" name="clan_name" placeholder="Enter clan name" required>
+            <button type="submit" class="update-button">Search</button>
+          </form>
+        </div>
+      {% endif %}
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <ul></ul>
+    <img src="{{ url_for('static', filename='Logos/footerChess.png') }}" alt="Bot" class="icon">
+    <p>&copy; 2025 All Rights Reserved</p>
+  </footer>
+
+  <!-- Vue App Animation Script -->
+  <script src="{{ url_for('static', filename='js/vue_clans.js') }}"></script>
+  <!-- Legacy JS for form handling -->
+  <script src="{{ url_for('static', filename='js/clan.js') }}"></script>
+</body>
+</html>

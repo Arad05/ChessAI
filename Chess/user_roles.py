@@ -4,6 +4,7 @@ This module defines extended user classes: Member and Admin.
 
 from user import User
 from datetime import datetime
+from clan import Clan  # Import the Clan class
 
 class Member(User):
     """
@@ -13,18 +14,25 @@ class Member(User):
     """
     def __init__(self, email, password, first_name, last_name, phone_number, country, nickname):
         super().__init__(email, password, first_name, last_name, phone_number, country, nickname)
-        self.role = "member"   # Role flag
-        self.clan = None       # Initially, no clan
+        self.role = "member"     # Application role flag
+        self.clan = None         # The clan the user belongs to
+        self.clan_role = None    # Clan-specific role: None, "member", "mod", or "Leader"
     
 
-    def create_clan(self, clan_name: str):
-        """Creates a clan for the member."""
-        self.clan = {
-            "name": clan_name,
-            "members": [self.nickname],
-            "created": datetime.now()
-        }
-        print(f"Clan '{clan_name}' created by {self.nickname}.")
+    def create_clan(self, clan_name: str, required_elo: int, is_private: bool = False):
+        """
+        Creates a clan for the member.
+        The creator becomes the Leader of the clan.
+        """
+        if self.clan is not None:
+            print(f"{self.nickname} is already in a clan.")
+            return
+
+        # Create a new Clan instance with self as the leader.
+        self.clan = Clan(clan_name, "About " + clan_name, self, required_elo, is_private)
+        self.clan_role = "Leader"
+        # The Clan.__init__ call already updates the DB.
+
 
 
     def fight_bot(self, bot):

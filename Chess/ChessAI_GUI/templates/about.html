@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChessAI - About</title>
     <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/about.css') }}">
 </head>
 <body>
-
     <header>
         <div class="container">
-            <h1 class="page-title">About</h1>
+            <h1 class="page-title">About ChessAI</h1>
             <nav>
                 <ul>
                     {% if not session.get('user') %}
@@ -19,14 +19,14 @@
                     {% endif %}
                     <li><a href="{{ url_for('about') }}">About</a></li>
                     {% if session.get('user') %}
-                        <!-- Show user settings if logged in -->
                         <li><a href="{{ url_for('user_settings') }}">Settings</a></li>
                         <li><a href="{{ url_for('logout') }}">Logout</a></li>
-                        <!-- If current_user exists and is admin, show admin dashboard link -->
                         {% if current_user and current_user.role == "admin" %}
                             <li><a href="{{ url_for('admin_dashboard') }}">Admin Page</a></li>
                         {% endif %}
-                    
+                        {% if session.get('role') in ['admin', 'member'] %}
+                            <li><a href="{{ url_for('clan_page') }}">Clan</a></li>
+                        {% endif %}
                     {% else %}
                         <li><a href="{{ url_for('login') }}">Login</a></li>
                         <li><a href="{{ url_for('sign_up') }}">Sign up</a></li>
@@ -34,42 +34,42 @@
                     <li><a href="{{ url_for('home') }}">Home</a></li>
                 </ul>
             </nav>
-            
         </div>
     </header>
 
     <main id="app">
-        <div class="logo-container">
-            <img src="/static/Logos/chessLogo.png" alt="App Logo" class="app-logo">
-        </div>
-        
-        <div class="title-container">
-            <h1 class="title">ChessAI - About</h1>
-            <p>Our game offers an advanced chess experience with two modes: playing against a bot or playing online.</p>
-        </div>
-
-        <section class="about-section">
-            <h2>About the Game</h2>
-            <p>ChessAI is a smart chess game that utilizes artificial intelligence and physical boards to allow you to play against a bot or other players by connecting their board to the website. This way, the pieces moved physically will also move on the screen! Our goal is to provide an enjoyable and challenging chess experience with advanced tools.</p>
+        <div class="content-container">
+            <div class="logo-container">
+                <img src="/static/Logos/chessLogo.png" alt="App Logo" class="app-logo">
+            </div>
             
-            <h2>Our Features</h2>
-            <ul>
-                <li>Play against a bot with different difficulty levels</li>
-                <li>Option to play online against other players by connecting a physical board to the website</li>
-                <li>Simple and user-friendly experience</li>
-                <li>Mobile-friendly and accessible across all devices</li>
-            </ul>
-        </section>
+            <div class="title-container">
+                <h1 class="title">Welcome to ChessAI</h1>
+                <p class="subtitle">Your ultimate AI-powered chess experience.</p>
+            </div>
+
+            <section class="about-section">
+                <h2>About the Game</h2>
+                <p>ChessAI is a smart chess game that utilizes artificial intelligence to allow you to play against a bot or other players online. Our goal is to provide an enjoyable and challenging chess experience with advanced tools and unique features.</p>
+                
+                <h2>Key Features</h2>
+                <ul class="feature-list">
+                    <li>Play against an AI with different difficulty levels</li>
+                    <li>Challenge friends or players online in 1v1 matches</li>
+                    <li>Join or create clans to participate in clan wars</li>
+                    <li>User-friendly experience with a clean interface</li>
+                </ul>
+            </section>
+        </div>
     </main>
 
     <footer>
-        <ul>
-        </ul>
-        <img src="/static/Logos/footerChess.png" alt="Bot" class="icon">
-        <p>&copy; 2025 All Rights Reserved</p>
+        <div class="footer-container">
+            <img src="/static/Logos/footerChess.png" alt="ChessAI Bot" class="icon">
+            <p>&copy; 2025 All Rights Reserved</p>
+        </div>
     </footer>
     
-
     <script src="{{ url_for('static', filename='js/about.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/vue_about.js') }}" defer></script>
 </body>

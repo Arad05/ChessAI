@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify, session, current_app
+from flask import Flask, flash, json, render_template, request, redirect, url_for, jsonify, session, current_app
 import os
 import smtplib
 from flask_wtf.csrf import CSRFProtect
@@ -11,7 +11,7 @@ from user import User
 from functools import wraps
 import bleach
 from user_roles import Member, Admin
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from db import close_db, get_db
 import psycopg2.extras
 import random, string
@@ -24,7 +24,6 @@ print(os.path.join(os.getcwd(), "ChessAI_GUI/static"))
 # Set secret key
 app.secret_key = os.environ.get("FLASK_SECRET_KEY") or os.urandom(24)
 app.config.from_pyfile('config.py')
-
 
 
 # Initialize CSRF protection
@@ -89,6 +88,13 @@ users_db = {
     }
 }
 
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('user'):
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 #
 @app.context_processor
@@ -183,9 +189,8 @@ def login():
         user = cur.fetchone()
         print(f"User from session: {user}")
 
-        if user and user["ban_end"] and user["ban_end"] > datetime.now():
+        if user["ban_end"] and user["ban_end"] > datetime.now(timezone.utc):
             return jsonify({"success": False, "message": "You are banned until " + user["ban_end"].strftime('%Y-%m-%d %H:%M:%S')})
-        return redirect(url_for('home'))
 
     if request.method == 'POST':
         # Remove accidental whitespace from the inputs.
@@ -208,11 +213,12 @@ def login():
         # Compare passwords directly (ONLY FOR TESTING, NOT SECURE)
         if user and user['password'] == password:
             print(f"User authenticated: {user}")
-            if user["ban_end"] and user["ban_end"] > datetime.now():
+            if user["ban_end"] and user["ban_end"] > datetime.now(timezone.utc):
                 return jsonify({"success": False, "message": "You are banned until " + user["ban_end"].strftime('%Y-%m-%d %H:%M:%S')})
-
+            user['ban_end'] = None
             session['user'] = email
             session['role'] = user['role']
+            session['clan'] = user['clan']
             return jsonify({"success": True, "message": "Login successful!"})
         else:
             print("Authentication failed: Incorrect email or password.")
@@ -225,6 +231,8 @@ def login():
 @app.route('/logout')
 def logout():
     session.pop('user', None)
+    session.pop('role', None)
+    session.pop('clan', None)
     return redirect(url_for('login'))
 
 
@@ -305,7 +313,7 @@ def get_current_user():
     if not user_info:
         return None
 
-    # Create a User object (assuming your User class accepts these parameters)
+    # Create a User object and include clan and clan_role
     user = User(
         email=email,
         password=user_info["password"],
@@ -318,12 +326,15 @@ def get_current_user():
     user.rating = user_info.get("rating", 1200)
     user.role = user_info.get("role", "user")
     user.online_status = user_info.get("online_status", False)
-    
-    # Use JSON columns directly (they're already lists/arrays)
     user.games_history = user_info.get("games_history", [])
     user.friends = user_info.get("friends", [])
     
+    # New fields:
+    user.clan = user_info.get("clan", None)
+    user.clan_role = user_info.get("clan_role", None)
+    
     return user
+
 
 
 
@@ -345,6 +356,8 @@ def user_settings():
         'country': user.country,
         'rating': user.rating,
         'role': user.role,
+        'clan': user.clan if user.clan else "None",
+        'clan_role': user.clan_role if user.clan_role else "None",
         'stats': {
             'wins': sum(1 for game in user.games_history if game.get('result') == 'win'),
             'draws': sum(1 for game in user.games_history if game.get('result') == 'draw'),
@@ -355,6 +368,7 @@ def user_settings():
     }
 
     return render_template("user_settings.html", user=user_data)
+
 
 
 
@@ -402,7 +416,6 @@ def profile(friend_nickname):
     if not friend_info:
         return "User not found", 404
 
-    # Compute game stats from the JSON column 'games_history'
     games = friend_info.get('games_history', [])
     stats = {
         'wins': sum(1 for game in games if game.get('result') == 'win'),
@@ -410,7 +423,6 @@ def profile(friend_nickname):
         'losses': sum(1 for game in games if game.get('result') == 'loss')
     }
     
-    # Use the JSON column 'friends' directly and convert each friend string into a dict.
     friends_list = friend_info.get('friends', [])
     if isinstance(friends_list, list) and friends_list and isinstance(friends_list[0], str):
         friends_list = [{'nickname': friend} for friend in friends_list]
@@ -423,12 +435,15 @@ def profile(friend_nickname):
         'country': friend_info.get('country', ''),
         'rating': friend_info.get('rating', 1200),
         'stats': stats,
-        'history': games,  # Directly using the games_history JSON data
-        'friends': friends_list,  # Now a list of dicts, each with a "nickname" key
-        'role': friend_info.get('role', 'user')
+        'history': games,
+        'friends': friends_list,
+        'role': friend_info.get('role', 'user'),
+        'clan': friend_info.get('clan', "None"),
+        'clan_role': friend_info.get('clan_role', "None")
     }
     
     return render_template("friend_profile.html", user=friend_data)
+
 
 
 
@@ -572,10 +587,20 @@ def admin_dashboard():
     cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     
     if request.method == "GET":
-        # Query all users from the actual DB
-        cur.execute("SELECT email, nickname, role FROM users")
+        # Query all users including clan info from the actual DB
+        cur.execute("SELECT email, nickname, role, clan, clan_role, ban_end FROM users")
         all_users = cur.fetchall()
-        return render_template("admin_dashboard.html", users=all_users)
+        
+        # Query all clans from the DB
+        cur.execute("SELECT * FROM clans")
+        all_clans = cur.fetchall()
+        
+        # Calculate average elo for each clan and add it to the clan dict
+        for clan in all_clans:
+            clan['average_elo'] = calculate_average_elo(clan["name"])
+        
+        return render_template("admin_dashboard.html", users=all_users, clans=all_clans)
+
     
     if request.method == "POST":
         action = request.form.get("action")
@@ -585,11 +610,29 @@ def admin_dashboard():
         if action == "promote":
             cur.execute("UPDATE users SET role = 'member' WHERE email = %s AND role = 'user'", (target_email,))
             message = "Promoted successfully" if cur.rowcount else "Promotion failed"
-        
+            
         elif action == "demote":
-            cur.execute("UPDATE users SET role = 'user' WHERE email = %s AND role = 'member'", (target_email,))
-            message = "Demoted successfully" if cur.rowcount else "Demotion failed"
-
+            # Fetch user details to check clan membership and nickname
+            cur.execute("SELECT clan, nickname FROM users WHERE email = %s AND role = 'member'", (target_email,))
+            user_data = cur.fetchone()
+            if user_data:
+                clan = user_data['clan']
+                nickname = user_data['nickname']
+                # (1) Remove clan affiliation and (2) Nullify clan_role in users table
+                cur.execute(
+                    "UPDATE users SET role = 'user', clan = NULL, clan_role = NULL WHERE email = %s",
+                    (target_email,)
+                )
+                # (3) If user belonged to a clan, remove their nickname from the clan's members JSON
+                if clan:
+                    cur.execute(
+                        "UPDATE clans SET members = (members::jsonb - %s)::json WHERE name = %s",
+                        (nickname, clan)
+                    )
+                message = "Demoted successfully"
+            else:
+                message = "Demotion failed"
+    
         elif action == "ban":
             try:
                 duration = int(request.form.get("duration"))
@@ -597,37 +640,49 @@ def admin_dashboard():
                 duration = 0
 
             if duration > 0:
-                cur.execute("UPDATE users SET ban_end = (NOW() + interval '%s minutes') WHERE email = %s", (duration, target_email))
+                cur.execute("UPDATE users SET ban_end = (NOW() + interval '%s days') WHERE email = %s", (duration, target_email))
                 message = "User banned" if cur.rowcount else "Ban failed"
             else:
                 message = "Invalid duration"
-
+    
         elif action == "unban":
-            cur.execute("UPDATE users SET ban_end = NULL WHERE email = %s", (target_email,))
-            message = "User unbanned" if cur.rowcount else "Unban failed"
+            # Check if the user is currently banned
+            cur.execute("SELECT ban_end FROM users WHERE email = %s", (target_email,))
+            user_data = cur.fetchone()
+            
+            if user_data and user_data["ban_end"] is not None:
+                # User is banned, proceed with unbanning
+                cur.execute("UPDATE users SET ban_end = NULL WHERE email = %s", (target_email,))
+                message = "User unbanned" if cur.rowcount else "Unban failed"
+            else:
+                message = "User is not banned"
 
+    
         elif action == "delete":
-            # Get the nickname of the user to be deleted
-            cur.execute("SELECT nickname FROM users WHERE email = %s", (target_email,))
-            user = cur.fetchone()
-
-            if user:
-                deleted_nickname = user["nickname"]
-
-                # Remove the user from all friends lists
+            # Fetch user details to know their clan membership and nickname
+            cur.execute("SELECT clan, nickname FROM users WHERE email = %s", (target_email,))
+            user_data = cur.fetchone()
+            if user_data:
+                clan = user_data['clan']
+                nickname = user_data['nickname']
+                # Remove the user's nickname from any friends lists first
                 cur.execute("""
                     UPDATE users
                     SET friends = friends - %s
                     WHERE friends ? %s
-                """, (deleted_nickname, deleted_nickname))
-
-                # Delete the user
+                """, (nickname, nickname))
+                # (3) Remove the user from the clan's members JSON if they are in a clan
+                if clan:
+                    cur.execute(
+                        "UPDATE clans SET members = (members::jsonb - %s)::json WHERE name = %s",
+                        (nickname, clan)
+                    )
+                # Delete the user record
                 cur.execute("DELETE FROM users WHERE email = %s", (target_email,))
-                
                 message = "User deleted" if cur.rowcount else "Delete failed"
             else:
                 message = "User not found"
-
+    
         else:
             message = "Unknown action"
         
@@ -635,6 +690,209 @@ def admin_dashboard():
         return jsonify({"success": True, "message": message})
 
 
+
+def get_clan_members(clan_name):
+    db = get_db()
+    cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur.execute("SELECT members FROM clans WHERE name = %s", (clan_name,))
+    row = cur.fetchone()
+    cur.close()
+    if row and row.get("members"):
+        # If the column is stored as JSON in PostgreSQL,
+        # psycopg2 may already return a dict. If not, parse it.
+        members = row["members"]
+        if isinstance(members, str):
+            try:
+                members = json.loads(members)
+            except json.JSONDecodeError:
+                members = {}
+        return members
+    return {}
+
+
+def calculate_average_elo(clan_name):
+    """Calculate the average elo for the clan by looking up each member’s rating."""
+    members = get_clan_members(clan_name)
+    db = get_db()
+    total = 0
+    count = 0
+    for nickname in members.keys():
+        cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur.execute("SELECT rating FROM users WHERE nickname = %s", (nickname,))
+        user = cur.fetchone()
+        cur.close()
+        if user and user.get("rating"):
+            total += user["rating"]
+            count += 1
+    return (total / count) if count > 0 else None
+
+
+def get_clan_member_details(clan_name):
+    """
+    Retrieve detailed info (nickname, role, rating) for each clan member and 
+    return a list sorted by rating in descending order.
+    """
+    members = get_clan_members(clan_name)
+    db = get_db()
+    member_details = []
+    for nickname, role in members.items():
+        cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur.execute("SELECT rating FROM users WHERE nickname = %s", (nickname,))
+        user = cur.fetchone()
+        cur.close()
+        rating = user["rating"] if user and user.get("rating") else 0
+        member_details.append({"nickname": nickname, "role": role, "rating": rating})
+    # Sort the members by rating (highest first)
+    member_details.sort(key=lambda m: m["rating"], reverse=True)
+    return member_details
+
+
+@app.route('/clan', methods=['GET', 'POST'])
+@login_required
+def clan_page():
+    if session.get('role') not in ['member', 'admin', 'mod']:
+        flash("You must be a member, mod, or admin to access this page.")
+        return redirect(url_for('home'))
+    
+    db = get_db()
+    cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    
+    cur.execute("SELECT * FROM users WHERE email = %s", (session['user'],))
+    user_info = cur.fetchone()
+    
+    clan_info = None
+    clan_admin = None
+    members_details = []
+
+    if user_info and user_info.get("clan"):
+        cur.execute("SELECT * FROM clans WHERE name = %s", (user_info["clan"],))
+        clan_info = cur.fetchone()
+        
+        cur.execute("SELECT nickname FROM users WHERE clan = %s AND clan_role = 'Leader' LIMIT 1", (user_info["clan"],))
+        admin_info = cur.fetchone()
+        clan_admin = admin_info["nickname"] if admin_info else "N/A"
+
+        avg_elo = calculate_average_elo(clan_info["name"])
+        clan_info["average_elo"] = avg_elo
+        members_details = get_clan_member_details(clan_info["name"])
+
+    if request.method == "POST" and "clan_name" in request.form:
+        search_name = request.form.get("clan_name", "").strip()
+        if search_name:
+            cur.execute("SELECT * FROM clans WHERE name ILIKE %s", (search_name,))
+            clan_info = cur.fetchone()
+            if clan_info:
+                cur.execute("SELECT nickname FROM users WHERE clan = %s AND clan_role = 'Leader' LIMIT 1", (clan_info["name"],))
+                admin_info = cur.fetchone()
+                clan_admin = admin_info["nickname"] if admin_info else "N/A"
+                
+                avg_elo = calculate_average_elo(clan_info["name"])
+                clan_info["average_elo"] = avg_elo
+                members_details = get_clan_member_details(clan_info["name"])
+            else:
+                flash("No clan found with that name.")
+    
+    db.commit()
+    cur.close()
+    return render_template("clan.html", clan=clan_info, clan_admin=clan_admin, members_details=members_details, current_user=user_info)
+
+
+@app.route('/clan_action', methods=['POST'])
+@login_required
+def clan_action():
+    """
+    Handles promote, demote, and kick actions.
+    Expects form data:
+      - action: 'promote', 'demote', or 'kick'
+      - target: the nickname of the target user
+    """
+    action = request.form.get("action")
+    target = request.form.get("target")
+    current_user_email = session.get("user")
+    
+    db = get_db()
+    cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    
+    # Get current user info and their clan including clan_role.
+    cur.execute("SELECT clan, nickname, clan_role FROM users WHERE email = %s", (current_user_email,))
+    current_info = cur.fetchone()
+    if not current_info or not current_info.get("clan"):
+        flash("You are not in a clan.")
+        return redirect(url_for('clan_page'))
+    
+    clan_name = current_info["clan"]
+    current_clan_role = current_info.get("clan_role", "member")  # default to member if not set
+    
+    # Get the target user's info to ensure they are in the same clan.
+    cur.execute("SELECT nickname, clan, clan_role FROM users WHERE nickname = %s", (target,))
+    target_info = cur.fetchone()
+    if not target_info or target_info.get("clan") != clan_name:
+        flash("Target user is not in your clan.")
+        return redirect(url_for('clan_page'))
+    
+    # Get the clan's current members dictionary.
+    cur.execute("SELECT members FROM clans WHERE name = %s", (clan_name,))
+    clan_row = cur.fetchone()
+    if clan_row:
+        members = clan_row["members"]
+        if isinstance(members, str):
+            try:
+                members = json.loads(members)
+            except json.JSONDecodeError:
+                members = {}
+    else:
+        flash("Clan not found.")
+        return redirect(url_for('clan_page'))
+
+    # Disallow any changes to the Leader.
+    if target_info["clan_role"] == "Leader":
+        flash("Cannot modify the leader.")
+        return redirect(url_for('clan_page'))
+    
+    # Process the action.
+    if action == "kick":
+        if current_clan_role not in ["Leader", "mod"]:
+            flash("You are not allowed to kick members.")
+            return redirect(url_for('clan_page'))
+        # Remove clan association and clan role for the target.
+        cur.execute("UPDATE users SET clan = NULL, clan_role = NULL WHERE nickname = %s", (target,))
+        if target in members:
+            del members[target]
+        flash(f"{target} has been kicked from the clan.")
+    
+    elif action == "promote":
+        # Only allow promoting a member.
+        if target_info["clan_role"] != "member":
+            flash("Only members can be promoted.")
+            return redirect(url_for('clan_page'))
+        if current_clan_role not in ['Leader', 'mod']:
+            flash("You are not allowed to promote members.")
+            return redirect(url_for('clan_page'))
+        cur.execute("UPDATE users SET clan_role = 'mod' WHERE nickname = %s", (target,))
+        members[target] = "mod"
+        flash(f"{target} has been promoted to mod.")
+    
+    elif action == "demote":
+        # Only a Leader can demote a mod.
+        if target_info["clan_role"] != "mod":
+            flash("Only mods can be demoted.")
+            return redirect(url_for('clan_page'))
+        if current_clan_role != "Leader":
+            flash("Only clan leaders can demote mods.")
+            return redirect(url_for('clan_page'))
+        cur.execute("UPDATE users SET clan_role = 'member' WHERE nickname = %s", (target,))
+        members[target] = "member"
+        flash(f"{target} has been demoted to member.")
+    
+    else:
+        flash("Invalid action.")
+        return redirect(url_for('clan_page'))
+    
+    # Update the clan's members JSON in the clans table.
+    cur.execute("UPDATE clans SET members = %s WHERE name = %s", (json.dumps(members), clan_name))
+    db.commit()
+    cur.close()
+    return redirect(url_for('clan_page'))
 
 
 if __name__ == "__main__":

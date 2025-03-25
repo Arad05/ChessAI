@@ -22,14 +22,14 @@
                     {% endif %}
                     <li><a href="{{ url_for('about') }}">About</a></li>
                     {% if session.get('user') %}
-                        <!-- Show user settings if logged in -->
                         <li><a href="{{ url_for('user_settings') }}">Settings</a></li>
                         <li><a href="{{ url_for('logout') }}">Logout</a></li>
-                        <!-- If current_user exists and is admin, show admin dashboard link -->
                         {% if current_user and current_user.role == "admin" %}
                             <li><a href="{{ url_for('admin_dashboard') }}">Admin Page</a></li>
                         {% endif %}
-                    
+                        {% if session.get('role') in ['admin', 'member'] %}
+                            <li><a href="{{ url_for('clan_page') }}">Clan</a></li>
+                        {% endif %}
                     {% else %}
                         <li><a href="{{ url_for('login') }}">Login</a></li>
                         <li><a href="{{ url_for('sign_up') }}">Sign up</a></li>
@@ -41,12 +41,18 @@
     </header>
 
   <h1>Admin Dashboard</h1>
+  
+  <!-- Users Table -->
+  <h2>Users</h2>
   <table id="usersTable">
     <thead>
       <tr>
         <th>Email</th>
         <th>Nickname</th>
         <th>Role</th>
+        <th>Clan</th>
+        <th>Clan Role</th>
+        <th>Ban End</th>
         <th>Actions</th>
       </tr>
     </thead>
@@ -56,6 +62,9 @@
         <td>{{ user.email if user.email is defined else "N/A" }}</td>
         <td>{{ user.nickname }}</td>
         <td>{{ user.role }}</td>
+        <td>{{ user.clan if user.clan else "None" }}</td>
+        <td>{{ user.clan_role if user.clan_role else "None" }}</td>
+        <td>{{ user.ban_end if user.ban_end else "Not Banned" }}</td>
         <td>
           {% if user.role == "user" %}
             <button class="action-btn" data-action="promote" data-email="{{ user.email }}">Promote to Member</button>
@@ -63,9 +72,50 @@
             <button class="action-btn" data-action="demote" data-email="{{ user.email }}">Demote to User</button>
           {% endif %}
           {% if user.role != "admin" %}
-            <button class="action-btn" data-action="ban" data-email="{{ user.email }}">Ban</button>
-            <button class="action-btn" data-action="delete" data-email="{{ user.email }}">Delete</button>
+              <button class="action-btn" data-action="unban" data-email="{{ user.email }}">Unban</button>
+              <button class="action-btn" data-action="ban" data-email="{{ user.email }}">Ban</button>
+              <button class="action-btn" data-action="delete" data-email="{{ user.email }}">Delete</button>
           {% endif %}
+      
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  
+  <!-- Clans Table -->
+  <h2>Clans</h2>
+  <table id="clansTable">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>About</th>
+        <th>Required ELO</th>
+        <th>Private</th>
+        <th>Members</th>
+        <th>Average ELO</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for clan in clans %}
+      <tr>
+        <td>{{ clan.id }}</td>
+        <td>{{ clan.name }}</td>
+        <td>{{ clan.about }}</td>
+        <td>{{ clan.required_elo }}</td>
+        <td>{{ "Yes" if clan.is_private else "No" }}</td>
+        <td>
+          {# Assuming 'members' is stored as JSON/dict, display member names #}
+          {% if clan.members %}
+            {{ clan.members | tojson }}
+          {% else %}
+            None
+          {% endif %}
+        </td>
+        <td>
+          {# Optionally you can calculate average ELO on the server side and pass it here #}
+          {{ clan.average_elo if clan.average_elo is defined else "N/A" }}
         </td>
       </tr>
       {% endfor %}
@@ -84,8 +134,8 @@
     <div class="modal-content">
       <span class="close">&times;</span>
       <h2>Ban User</h2>
-      <p>Please enter ban duration in minutes:</p>
-      <input type="number" id="banDuration" min="1" placeholder="Minutes">
+      <p>Please enter ban duration in days:</p>
+      <input type="number" id="banDuration" min="1" placeholder="Days">
       <button id="confirmBan">Confirm Ban</button>
     </div>
   </div>

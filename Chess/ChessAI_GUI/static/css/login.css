@@ -203,11 +203,6 @@ footer a.signup-link {
     transform: translateX(-50%);
 }
 
-/* Ensuring the footer does not get too large due to padding on login page */
-body.login-page footer {
-    padding: 15px;
-    font-size: 1rem;
-}
 
 /* Specific styles for the login page to adjust the footer */
 body.login-page {
@@ -216,14 +211,6 @@ body.login-page {
     height: 100%;
 }
 
-/* About page footer style for reference */
-body.about-page footer {
-    padding: 15px;
-    background-color: var(--footer-background-color);
-    color: var(--footer-text-color);
-    font-size: 1rem;
-    text-align: center;
-}
 
 /* Header animation */
 header nav ul {

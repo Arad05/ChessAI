@@ -66,14 +66,6 @@ document.addEventListener("DOMContentLoaded", function () {
         ease: "power2.out"
     });
 
-    // אנימציה לאייקון בפוטר
-    gsap.from("footer .icon", {
-        opacity: 0,
-        scale: 0.8,
-        duration: 1,
-        ease: "power2.out"
-    });
-
 });
 
 

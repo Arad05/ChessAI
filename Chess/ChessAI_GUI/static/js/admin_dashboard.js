@@ -31,10 +31,11 @@ document.addEventListener("DOMContentLoaded", function() {
   });
 
   // Close the modal when clicking on the close span
-  closeModal.addEventListener("click", function() {
-    banModal.style.display = "none";
-    currentTargetEmail = null;
-  });
+  if (closeModal) {
+    closeModal.addEventListener("click", function () {
+        location.reload(); // Reload the page when modal is closed
+    });
+  }
 
   // When clicking outside the modal content, close the modal
   window.addEventListener("click", function(event) {

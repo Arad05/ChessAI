@@ -13,6 +13,10 @@ def get_db():
         )
     return g.db
 
+def get_connection():
+    return get_db()
+
+
 def close_db(e=None):
     db = g.pop('db', None)
     if db is not None:

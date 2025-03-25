@@ -419,3 +419,44 @@ span.Rookie {
     font-size: 1.5rem;
     color: #005fa3;
   }
+
+/* Clan and Role Styling */
+.clan-info {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #0077cc; /* Blue tone for emphasis */
+  margin-top: 5px;
+}
+
+.clan-info small {
+  font-size: 0.9rem;
+  font-weight: normal;
+  color: #555;
+}
+
+/* Role Styling */
+.role-class {
+  display: inline-block;
+  padding: 4px 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 5px;
+  text-transform: capitalize;
+}
+
+/* Different role colors */
+.role-class.leader {
+  background-color: #ff4d4d;
+  color: white;
+}
+
+.role-class.mod {
+  background-color: #3700ff;
+  color: rgb(255, 255, 255);
+}
+
+.role-class.member {
+  background-color: #ffcc00;
+  color: white;
+}
+  

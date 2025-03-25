@@ -1,0 +1,310 @@
+/* CSS Variables */
+:root {
+  --primary-color: #007bff; /* Vibrant blue */
+  --secondary-color: #5e42c5; /* Purple accent */
+  --background-color: #f4f7fa; /* Light background for better contrast */
+  --text-color: #333; /* Dark text for readability */
+  --footer-background-color: #1d1d1d; /* Dark footer */
+  --footer-text-color: #e0e0e0; /* Light footer text */
+  --primary-hover-color: #005fa3; /* Slightly darker blue for hover effect */
+  --nav-hover-color: rgba(0, 123, 255, 0.1); /* Softer hover effect */
+  --card-bg-color: #ffffff; /* White background for cards */
+  --card-border-color: #ddd; /* Light border color for cards */
+  --win-color: #4CAF50; /* Green for win */
+  --loss-color: #f44336; /* Red for loss */
+  --draw-color: #9e9e9e; /* Grey for draw */
+}
+
+/* General body and page settings */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #3578e5, #5e42c5); /* Subtle gradient with rich tones */
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  font-family: Arial, sans-serif;
+  color: var(--text-color);
+}
+
+/* Header */
+header {
+  background-color: var(--primary-color);
+  padding: 12px 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+header nav ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 25px;
+}
+
+header nav ul li {
+  display: inline;
+}
+
+header nav ul li a {
+  color: white;
+  text-decoration: none;
+  font-size: 1.1rem;
+  padding: 10px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Navigation hover effects */
+header nav ul li a:hover {
+  color: var(--primary-hover-color);
+  background-color: var(--nav-hover-color);
+  text-decoration: underline;
+}
+
+header nav ul li a:focus,
+header nav ul li a.active {
+  background-color: var(--primary-hover-color);
+  border-radius: 5px;
+}
+
+/* Main Content */
+main {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  padding-top: 70px; /* Adjust based on header height */
+}
+
+/* Settings Container (Clan card) */
+.settings-container {
+  background-color: var(--card-bg-color);
+  padding: 30px 40px;
+  border-radius: 16px;
+  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.15);
+  width: 730px;
+  transition: transform 0.3s ease;
+  text-align: left;
+}
+
+.settings-container:hover {
+  transform: scale(1.02);
+}
+
+.page-title {
+  text-align: center;
+  color: #ffffff;
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+/* Clan Card */
+.clan-card {
+  background-color: var(--card-bg-color);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+  margin-bottom: 30px;
+}
+
+.clan-header {
+  text-align: center;
+  background-color: var(--primary-color);
+  color: white;
+  padding: 15px;
+}
+
+.clan-body {
+  padding: 20px;
+  border: 1px solid var(--card-border-color);
+  border-top: none;
+}
+
+/* Detail Text Styling */
+.detail-text {
+  font-size: 1.1em;
+  margin-left: 5px;
+}
+
+.about-text { color: #333; }
+.elo-cap-text { color: #0066cc; }
+.average-elo-text { color: #009933; }
+.members-count-text { color: #cc6600; }
+
+/* Leader Text */
+.leader-text {
+  color: red;
+  font-weight: bold;
+}
+
+/* Members Section */
+.members-section {
+  margin-top: 20px;
+}
+
+.members-section h3 {
+  margin-bottom: 10px;
+  font-size: 1.5rem;
+  color: #005fa3;
+}
+
+.members-section ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.members-section li {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.members-section li:last-child {
+  border-bottom: none;
+}
+
+/* Member Item */
+.member-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Member Link Styling */
+.member-link {
+  text-decoration: none;
+  font-weight: bold;
+  color: #333;
+}
+
+.member-link:hover {
+  text-decoration: underline;
+}
+
+/* Role Styling */
+.members-section .role {
+  font-weight: bold;
+  /* Color is set inline based on role */
+}
+
+/* Action Buttons */
+.action-buttons {
+  margin-top: 5px;
+}
+
+.action-form {
+  display: inline-block;
+  margin-right: 5px;
+}
+
+.btn {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.3s ease;
+}
+
+.promote-btn {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.promote-btn:hover {
+  background-color: #43a047;
+}
+
+.demote-btn {
+  background-color: #FF9800;
+  color: white;
+}
+
+.demote-btn:hover {
+  background-color: #fb8c00;
+}
+
+.kick-btn {
+  background-color: #F44336;
+  color: white;
+}
+
+.kick-btn:hover {
+  background-color: #e53935;
+}
+
+/* No Clan Found Section */
+.no-clan {
+  text-align: center;
+}
+
+.no-clan form {
+  margin-top: 20px;
+}
+
+/* Update Button */
+.update-button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 10px;
+  background-color: var(--primary-color);
+  color: white;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.update-button:hover {
+  background-color: var(--primary-hover-color);
+  transform: scale(1.02);
+}
+
+/* Footer */
+footer {
+  padding: 15px;
+  background-color: var(--footer-background-color);
+  color: var(--footer-text-color);
+  text-align: center;
+  margin-top: auto;
+  width: 100%;
+  position: relative;
+}
+
+footer ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  position: relative;
+  top: 15px;
+}
+
+footer a {
+  color: var(--footer-text-color);
+  font-size: 1rem;
+  margin: 0 12px;
+  text-decoration: none;
+  border: 2px solid transparent;
+  border-radius: 5px;
+  padding: 8px 12px;
+  transition: all 0.3s ease;
+}
+
+footer a:hover {
+  background-color: var(--primary-hover-color);
+  border-color: var(--footer-text-color);
+}
+
+.icon {
+  width: 40px;
+  height: 40px;
+  margin-right: 12px;
+}
