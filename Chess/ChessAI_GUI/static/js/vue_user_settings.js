@@ -84,7 +84,20 @@ const app = Vue.createApp({
     },
     collapseHistory() {
       this.historyLimit = 5;
-    }
+    },
+
+    formatPhone() {
+      let digits = this.user.phone.replace(/\D/g, ''); // הסרת תווים לא מספריים
+      if (digits.length <= 3) {
+        this.user.phone = digits;
+      } else if (digits.length <= 6) {
+        this.user.phone = `${digits.slice(0, 3)}-${digits.slice(3)}`;
+      } else if (digits.length <= 10) {
+        this.user.phone = `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+      } else {
+        this.user.phone = `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
+      }
+    },
   }
 });
 

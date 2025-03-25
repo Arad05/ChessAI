@@ -93,6 +93,13 @@ main {
   text-align: left;
 }
 
+.settings-container .page-title {
+  text-align: center;
+  color: var(--text-color);
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
 .settings-container:hover {
   transform: scale(1.02);
 }
@@ -104,12 +111,13 @@ main {
   margin-bottom: 20px;
 }
 
-/* Clan Card */
+/* Clan Card adjustments */
 .clan-card {
   background-color: var(--card-bg-color);
+  border: 1px solid var(--card-border-color);
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
   margin-bottom: 30px;
 }
 
@@ -134,7 +142,7 @@ main {
 
 .about-text { color: #333; }
 .elo-cap-text { color: #0066cc; }
-.average-elo-text { color: #009933; }
+.average-elo-text { color: #0066cc; }
 .members-count-text { color: #cc6600; }
 
 /* Leader Text */
@@ -144,6 +152,38 @@ main {
 }
 
 /* Members Section */
+
+.members-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.members-table th,
+.members-table td {
+  padding: 10px;
+  border: 1px solid #ddd;
+  text-align: left;
+  vertical-align: middle;
+  font-size: 1rem;
+}
+
+.members-table th {
+  background-color: var(--primary-color);
+  color: white;
+  font-weight: bold;
+}
+
+.members-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+/* Ensure action buttons within the table cell are aligned */
+.members-table td .action-form {
+  display: inline-block;
+  margin-right: 5px;
+}
+
 .members-section {
   margin-top: 20px;
 }
@@ -174,18 +214,51 @@ main {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.member-item:last-child {
+  border-bottom: none;
+}
+
+/* Member Info Styling */
+.member-info {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+  color: var(--text-color);
 }
 
 /* Member Link Styling */
+/* Link and Text Spacing */
 .member-link {
   text-decoration: none;
   font-weight: bold;
-  color: #333;
+  color: var(--text-color);
+  margin-right: 0.5em;
 }
 
 .member-link:hover {
   text-decoration: underline;
 }
+
+.separator {
+  margin: 35px;;
+}
+
+.role {
+  font-weight: bold;
+  margin-right: 0.5em;
+}
+
+/* Rating Text Styling */
+.rating-text {
+  font-size: 1rem;
+  color: var(--text-color);
+}
+
 
 /* Role Styling */
 .members-section .role {
@@ -195,7 +268,10 @@ main {
 
 /* Action Buttons */
 .action-buttons {
-  margin-top: 5px;
+  min-width: 180px;
+  display: flex;
+  gap: 5px;
+  justify-content: flex-end;
 }
 
 .action-form {

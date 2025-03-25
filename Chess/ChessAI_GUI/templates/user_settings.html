@@ -14,7 +14,7 @@
 <body>
   <header>
     <div class="container">
-        <h1 class="page-title">About</h1>
+        <h1 class="page-title">Settings</h1>
         <nav>
             <ul>
                 {% if not session.get('user') %}
@@ -25,15 +25,12 @@
                     <!-- Show user settings if logged in -->
                     <li><a href="{{ url_for('user_settings') }}">Settings</a></li>
                     <li><a href="{{ url_for('logout') }}">Logout</a></li>
-                    <!-- If current_user exists and is admin, show admin dashboard link -->
                     {% if current_user and current_user.role == "admin" %}
                         <li><a href="{{ url_for('admin_dashboard') }}">Admin Page</a></li>
                     {% endif %}
-
                     {% if session.get('role') in ['admin', 'member'] %}
                         <li><a href="{{ url_for('clan_page') }}">Clan</a></li>
                     {% endif %}
-                
                 {% else %}
                     <li><a href="{{ url_for('login') }}">Login</a></li>
                     <li><a href="{{ url_for('sign_up') }}">Sign up</a></li>
@@ -41,157 +38,165 @@
                 <li><a href="{{ url_for('home') }}">Home</a></li>
             </ul>
         </nav>
-        
     </div>
 </header>
 
-  <script>
-    const initialUserData = {{ user|tojson|safe }};
-  </script>  
+<script>
+  const initialUserData = {{ user|tojson|safe }};
+</script>
 
-  {% raw %}
-  <main id="app">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <div class="settings-container">
-      <div class="profile-section">
-        <img src="/static/Logos/user.png" alt="Profile Picture" class="profile-picture">
-        <h2>{{ user.name }} {{ user.lastName }}</h2>
-        <p class="elo-rating">ELO Rating: {{ user.rating }}</p>
-        <p class="username">Username: {{ user.nickname }}</p>
-        <p class="clan-info">
-          Clan: <span class="clan-name">{{ user.clan }}</span> 
-          <span :class="['role-class', user.clan_role.toLowerCase()]">{{ user.clan_role }}</span>
-
-        </p>        
-        
-        <p><strong>Role:</strong> <span :class="roleClass">{{ user.role }}</span></p>
-      </div>
-      
-
-      <div class="info-section">
-        <h3>User Information</h3>
-        <form @submit.prevent="updateSettings">
-          <div class="form-group">
-            <label>Nickname:</label>
-            <input type="text" v-model="user.nickname" readonly>
-          </div>
-          <div class="form-group">
-            <label>Phone Number:</label>
-            <input type="tel" v-model="user.phone">
-          </div>
-          <div class="form-group">
-            <label>First Name:</label>
-            <input type="text" v-model="user.name">
-          </div>
-          <div class="form-group">
-            <label>Last Name:</label>
-            <input type="text" v-model="user.lastName">
-          </div>
-          <div class="form-group">
-            <label>Country:</label>
-            <input type="text" v-model="user.country">
-          </div>
-          <div class="profile-stats">
-            <h3>Game Stats</h3>
-            <p>Wins: {{ user.stats.wins }} | Draws: {{ user.stats.draws }} | Losses: {{ user.stats.losses }}</p>
-          </div>
-          <button type="submit" class="update-button">Update Settings</button>
-        </form>
-      </div>
-
-  <!-- Friends Section -->
-  <div class="friends-section">
-    <h3>Friends</h3>
-    <div class="friends-list">
-      <div class="friend-card" v-for="friend in limitedFriends" :key="friend">
-        <a :href="`/profile/${friend}`">
-          <p>{{ friend }}</p>
-        </a>
-      </div>        
+{% raw %}
+<main id="app">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="settings-container">
+    <div class="profile-section">
+      <img src="/static/Logos/user.png" alt="Profile Picture" class="profile-picture">
+      <h2>{{ user.name }} {{ user.lastName }}</h2>
+      <p class="elo-rating">ELO Rating: {{ user.rating }}</p>
+      <p class="username">Username: {{ user.nickname }}</p>
+      <p class="clan-info">
+        Clan: <span class="clan-name">{{ user.clan }}</span> 
+        <span :class="['role-class', user.clan_role.toLowerCase()]">{{ user.clan_role }}</span>
+      </p>
+      <p><strong>Role:</strong> <span :class="roleClass">{{ user.role }}</span></p>
+    </div>
+    
+    <div class="info-section">
+      <h3>User Information</h3>
+      <form @submit.prevent="updateSettings">
+        <div class="form-group">
+          <label>Nickname:</label>
+          <input type="text" v-model="user.nickname" readonly>
+        </div>
+        <div class="form-group">
+          <label>Phone Number:</label>
+          <!-- Example pattern: accepts +, numbers, spaces or dashes; adjust as needed -->
+          <input type="tel" 
+              v-model="user.phone" 
+              @input="formatPhone" 
+              pattern="^05[0-9]-[0-9]{3}-[0-9]{4}$"
+              required 
+              title="Phone must be in format 05X-XXX-XXXX">
+   
+        </div>
+        <div class="form-group">
+          <label>First Name:</label>
+          <!-- Only letters allowed -->
+          <input type="text" v-model="user.name" 
+                 pattern="^[A-Za-z]+$" required 
+                 title="First name should contain only letters">
+        </div>
+        <div class="form-group">
+          <label>Last Name:</label>
+          <!-- Only letters allowed -->
+          <input type="text" v-model="user.lastName" 
+                 pattern="^[A-Za-z]+$" required 
+                 title="Last name should contain only letters">
+        </div>
+        <div class="form-group">
+          <label>Country:</label>
+          <!-- Dropdown for countries -->
+          <select v-model="user.country" required>
+            <option disabled value="">Select a country</option>
+            <option value="Israel">Israel</option>
+            <option value="USA">USA</option>
+            <option value="Canada">Canada</option>
+            <option value="UK">UK</option>
+            <option value="Germany">Germany</option>
+            <option value="France">France</option>
+            <!-- Add more countries as needed -->
+          </select>
+        </div>
+        <div class="profile-stats">
+          <h3>Game Stats</h3>
+          <p>Wins: {{ user.stats.wins }} | Draws: {{ user.stats.draws }} | Losses: {{ user.stats.losses }}</p>
+        </div>
+        <button type="submit" class="update-button">Update Settings</button>
+      </form>
     </div>
 
-    <button v-if="showMoreFriendsButton" class="show-more-button" @click="showMoreFriends">
-      Show More Friends
-    </button>
+    <!-- Friends Section -->
+    <div class="friends-section">
+      <h3>Friends</h3>
+      <div class="friends-list">
+        <div class="friend-card" v-for="friend in limitedFriends" :key="friend">
+          <a :href="`/profile/${friend}`">
+            <p>{{ friend }}</p>
+          </a>
+        </div>        
+      </div>
+      <button v-if="showMoreFriendsButton" class="show-more-button" @click="showMoreFriends">
+        Show More Friends
+      </button>
+      <button v-if="showCollapseFriendsButton" class="collapse-button" @click="collapseFriends">
+        Collapse Friends
+      </button>
+    </div>
+
+    <!-- History Section -->
+    <div class="history-section">
+      <h3>Game History</h3>
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>Opponent</th>
+            <th>Result</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="game in limitedHistory" :key="game.date">
+            <td><a :href="`/profile/${game.opponent_nickname}`">{{ game.opponent_nickname }}</a></td>
+            <td :class="game.result">{{ game.result }}</td>
+            <td>{{ game.date }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <button v-if="showMoreHistoryButton" class="show-more-button" @click="showMoreHistory">
+        Show More Games
+      </button>
+      <button v-if="showCollapseHistoryButton" class="collapse-button" @click="collapseHistory">
+        Collapse Games
+      </button>
+    </div>
     
-    <button v-if="showCollapseFriendsButton" class="collapse-button" @click="collapseFriends">
-      Collapse Friends
-    </button>
   </div>
+</main>
+{% endraw %}
 
-  <!-- History Section -->
-  <div class="history-section">
-    <h3>Game History</h3>
-    <table class="history-table">
-      <thead>
-        <tr>
-          <th>Opponent</th>
-          <th>Result</th>
-          <th>Date</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="game in limitedHistory" :key="game.date">
-          <td><a :href="`/profile/${game.opponent_nickname}`">{{ game.opponent_nickname }}</a></td>
-          <td :class="game.result">{{ game.result }}</td>
-          <td>{{ game.date }}</td>
-        </tr>
-      </tbody>
-    </table>
+<footer>
+  <ul></ul>
+  <img src="/static/Logos/footerChess.png" alt="Bot" class="icon">
+  <p>&copy; 2025 All Rights Reserved</p>
+</footer>
 
-    <button v-if="showMoreHistoryButton" class="show-more-button" @click="showMoreHistory">
-      Show More Games
-    </button>
+<!-- Vue App Script -->
+<script src="{{ url_for('static', filename='js/vue_user_settings.js') }}" defer></script>
 
-    <button v-if="showCollapseHistoryButton" class="collapse-button" @click="collapseHistory">
-      Collapse Games
-    </button>
-  </div>
-
-    
-  </main>
-  {% endraw %}
-
-  <footer>
-    <ul>
-    </ul>
-    <img src="/static/Logos/footerChess.png" alt="Bot" class="icon">
-    <p>&copy; 2025 All Rights Reserved</p>
-  </footer>
-
-  <!-- Vue App Script -->
-  <script src="{{ url_for('static', filename='js/vue_user_settings.js') }}" defer></script>
-  
-  
-  <!-- GSAP Animation Script -->
-  <script>
+<!-- GSAP Animation Script -->
+<script>
 document.addEventListener("DOMContentLoaded", function () {
-  // Animate navigation items
-    gsap.from("header nav ul li", {
-      opacity: 0,
-      y: -20,
-      duration: 0.8,
-      stagger: 0.15,
-      ease: "power2.out"
-    });
-
-    // Animate settings container
-    gsap.from(".settings-container", {
-      opacity: 0,
-      y: 30,
-      duration: 1,
-      ease: "power3.out"
-    });
-
-    // Animate friends section with a slight delay
-    gsap.from(".friends-section", {
-      opacity: 0,
-      x: -50,
-      duration: 1,
-      delay: 0.5,
-      ease: "power3.out"
-    });
+  gsap.from("header nav ul li", {
+    opacity: 0,
+    y: -20,
+    duration: 0.8,
+    stagger: 0.15,
+    ease: "power2.out"
   });
-  </script>
+  gsap.from(".settings-container", {
+    opacity: 0,
+    y: 30,
+    duration: 1,
+    ease: "power3.out"
+  });
+  gsap.from(".friends-section", {
+    opacity: 0,
+    x: -50,
+    duration: 1,
+    delay: 0.5,
+    ease: "power3.out"
+  });
+});
+</script>
 </body>
 </html>

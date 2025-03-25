@@ -366,41 +366,46 @@ def user_settings():
         'history': user.games_history,
         'friends': user.friends
     }
+    
 
     return render_template("user_settings.html", user=user_data)
 
 
-
-
 # Update user settings
+@csrf.exempt
 @app.route('/update_user_settings', methods=['POST'])
 def update_user_settings():
-    data = request.get_json()
-    if not data:
-        return jsonify({'success': False, 'error': 'No data provided'}), 400
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'error': 'No data provided'}), 400
 
-    email = session.get('user')
-    if not email:
-        return jsonify({'success': False, 'error': 'User not found'}), 400
+        email = session.get('user')
+        if not email:
+            return jsonify({'success': False, 'error': 'User not found'}), 400
 
-    db = get_db()
-    cur = db.cursor()
-    phone_number = sanitize(data.get('phone', ''))
-    first_name = sanitize(data.get('name', ''))
-    last_name = sanitize(data.get('lastName', ''))
-    country = sanitize(data.get('country', ''))
-    
-    cur.execute("""
-        UPDATE users 
-        SET phone_number = %s, first_name = %s, last_name = %s, country = %s 
-        WHERE email = %s
-    """, (phone_number, first_name, last_name, country, email))
-    db.commit()
+        db = get_db()
+        cur = db.cursor()
+        phone_number = sanitize(data.get('phone', ''))
+        first_name = sanitize(data.get('name', ''))
+        last_name = sanitize(data.get('lastName', ''))
+        country = sanitize(data.get('country', ''))
 
-    return jsonify({'success': True, 'message': 'User settings updated successfully!'})
+        cur.execute("""
+            UPDATE users 
+            SET phone_number = %s, first_name = %s, last_name = %s, country = %s 
+            WHERE email = %s
+        """, (phone_number, first_name, last_name, country, email))
+        db.commit()
+
+        return jsonify({'success': True, 'message': 'User settings updated successfully!'})
+    except Exception as e:
+        current_app.logger.error(f"Error updating user settings: {e}")
+        return jsonify({'success': False, 'error': 'An error occurred'}), 500
 
 
-# View a friend's profile
+
+# Friend's profile page
 @app.route('/profile/<friend_nickname>')
 def profile(friend_nickname):
     if 'user' not in session:
@@ -441,10 +446,13 @@ def profile(friend_nickname):
         'clan': friend_info.get('clan', "None"),
         'clan_role': friend_info.get('clan_role', "None")
     }
+
+    # Retrieve all existing nicknames from the database.
+    cur.execute("SELECT nickname FROM users")
+    users = cur.fetchall()
+    existing_users = {user['nickname'] for user in users}
     
-    return render_template("friend_profile.html", user=friend_data)
-
-
+    return render_template("friend_profile.html", user=friend_data, existing_users=existing_users)
 
 
 # Play online page
@@ -463,77 +471,6 @@ def play_bot():
         return redirect(url_for('login'))
 
     return render_template('play_bot.html')
-
-
-# New route to record a game result.
-@app.route('/record_game', methods=['POST'])
-def record_game():
-    data = request.get_json()
-    if not data:
-        return jsonify({'success': False, 'error': 'No data provided'}), 400
-
-    # Sanitize the opponent nickname and result inputs
-    opponent_nickname = sanitize(data.get('opponent_nickname'))
-    result = sanitize(data.get('result'))  # Expected: "win", "loss", or "draw"
-    if result not in ['win', 'loss', 'draw']:
-        return jsonify({'success': False, 'error': 'Invalid result'}), 400
-
-    email = session.get('user')
-    if not email or email not in users_db:
-        return jsonify({'success': False, 'error': 'User not found'}), 400
-
-    # Instantiate the current user as a User object.
-    current_user_data = users_db[email]
-    current_user_obj = User(
-        email=email,
-        password=current_user_data['password'],
-        first_name=current_user_data['first_name'],
-        last_name=current_user_data['last_name'],
-        phone_number=current_user_data['phone_number'],
-        country=current_user_data['country'],
-        nickname=current_user_data['nickname']
-    )
-
-    current_user_obj.rating = current_user_data.get("rating", 1200)
-    current_user_obj.games_history = current_user_data.get("games_history", [])
-
-    # Find the opponent by nickname.
-    opponent_email = None
-    opponent_data = None
-    
-    for e, info in users_db.items():
-        if info.get("nickname") == opponent_nickname:
-            opponent_email = e
-            opponent_data = info
-            break
-
-    if not opponent_data:
-        return jsonify({'success': False, 'error': 'Opponent not found'}), 404
-
-    opponent_obj = User(
-        email=opponent_email,
-        password=opponent_data['password'],
-        first_name=opponent_data['first_name'],
-        last_name=opponent_data['last_name'],
-        phone_number=opponent_data['phone_number'],
-        country=opponent_data['country'],
-        nickname=opponent_data['nickname']
-    )
-
-    opponent_obj.rating = opponent_data.get("rating", 1200)
-    opponent_obj.games_history = opponent_data.get("games_history", [])
-
-    # Record the game using the User method.
-    current_user_obj.record_game(opponent_obj, result)
-
-    # Update the fake DB with the new ratings and game histories.
-    users_db[email]['rating'] = current_user_obj.rating
-    users_db[email]['games_history'] = current_user_obj.games_history
-
-    users_db[opponent_email]['rating'] = opponent_obj.rating
-    users_db[opponent_email]['games_history'] = opponent_obj.games_history
-
-    return jsonify({'success': True, 'message': 'Game recorded and ratings updated!'}), 200
 
 
 # ---------------------------

@@ -13,7 +13,7 @@
 <body>
   <header>
     <div class="container">
-        <h1 class="page-title">About</h1>
+        <h1 class="page-title">{{ user.nickname }}'s Profile</h1>
         <nav>
           <ul>
               {% if not session.get('user') %}
@@ -49,9 +49,8 @@
     <div class="profile-container">
       <div class="profile-header">
         <img src="/static/Logos/user.png" alt="Profile Picture" class="profile-picture">
-        <h2>{{ user.name }} {{ user.lastName }}</h2>
+        <h2>{{ user.nickname }}</h2>
         <p class="elo-rating">ELO Rating: {{ user.rating }}</p>
-        <p class="username">Username: {{ user.nickname }}</p>
         <p class="clan-info">
           Clan: <span class="clan-name">{{ user.clan }}</span> 
           <small class="role-class {{ user.clan_role | lower }}">{{ user.clan_role }}</small>
@@ -87,31 +86,36 @@
       <div class="profile-history">
         <h3>Game History</h3>
         <table class="history-table">
-            <thead>
-                <tr>
-                    <th>Opponent</th>
-                    <th>Result</th>
-                    <th>Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for game in user.history %}
-                <tr>
-                    <td>
-                        <a href="{{ url_for('profile', friend_nickname=game.opponent_nickname) }}">
-                            {{ game.opponent_nickname }}
-                        </a>
-                    </td>
-                    <td class="{{ game.result }}">{{ game.result }}</td>
-                    <td>{{ game.date }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
+          <thead>
+            <tr>
+              <th>Opponent</th>
+              <th>Result</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for game in user.history %}
+            <tr>
+              <td>
+                {% if game.opponent_nickname in existing_users %}
+                  <a href="{{ url_for('profile', friend_nickname=game.opponent_nickname) }}">
+                    {{ game.opponent_nickname }}
+                  </a>
+                {% else %}
+                  <span>User does not exist anymore</span>
+                {% endif %}
+              </td>
+              <td class="{{ game.result }}">{{ game.result }}</td>
+              <td>{{ game.date }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
         </table>
-
+      
         <button id="showMoreHistory" class="show-more-button">Show More Games</button>
         <button id="collapseHistory" class="collapse-button">Collapse Games</button>
-      </div>     
+      </div>
+          
   </main>
 
   
