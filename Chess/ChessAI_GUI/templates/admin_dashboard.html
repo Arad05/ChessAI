@@ -24,7 +24,7 @@
                     {% if session.get('user') %}
                         <li><a href="{{ url_for('user_settings') }}">Settings</a></li>
                         <li><a href="{{ url_for('logout') }}">Logout</a></li>
-                        {% if current_user and current_user.role == "admin" %}
+                        {% if session.get('role') == "admin" %}
                             <li><a href="{{ url_for('admin_dashboard') }}">Admin Page</a></li>
                         {% endif %}
                         {% if session.get('role') in ['admin', 'member'] %}

@@ -1,3 +1,5 @@
+import hashlib
+import re
 from flask import Flask, flash, json, render_template, request, redirect, url_for, jsonify, session, current_app
 import os
 import smtplib
@@ -11,19 +13,31 @@ from user import User
 from functools import wraps
 import bleach
 from user_roles import Member, Admin
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, time, timedelta, timezone
 from db import close_db, get_db
 import psycopg2.extras
 import random, string
-
+import bcrypt
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from dotenv import load_dotenv
 # Create Flask instance
 app = Flask(__name__, template_folder="ChessAI_GUI/templates", static_folder="ChessAI_GUI/static")
 print(os.path.join(os.getcwd(), "ChessAI_GUI/static"))
+
+load_dotenv()
 
 
 # Set secret key
 app.secret_key = os.environ.get("FLASK_SECRET_KEY") or os.urandom(24)
 app.config.from_pyfile('config.py')
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+
+
+
+limiter = Limiter(get_remote_address, app=app, default_limits=["5 per minute"])
 
 
 # Initialize CSRF protection
@@ -38,56 +52,6 @@ def create_app():
     return app
 
 
-# Fake users database for demo purposes with multiple users
-users_db = {
-    "orikopilov2007@gmail.com": {
-         "password": generate_password_hash("Orik2007"),
-         "nickname": "Orik",
-         "first_name": "Ori",
-         "last_name": "Kopilov",
-         "phone_number": "053-225-7111",
-         "country": "Israel",
-         "rating": 1213,
-         "games_history": [
-              {"opponent": "Arad Or", "opponent_nickname": "AradO", "result": "win", "date": "2025-03-12 15:30"},
-              {"opponent": "John Doe", "opponent_nickname": "JohnD", "result": "draw", "date": "2025-03-11 20:15"}
-         ],
-         "friends": ["AradO", "JohnD"],
-         "role": "admin",
-         "ban_end": None
-    },
-    "arador2007@gmail.com": {
-         "password": generate_password_hash("Password123"),
-         "nickname": "AradO",
-         "first_name": "Arad",
-         "last_name": "Or",
-         "phone_number": "053-431-0507",
-         "country": "Israel",
-         "rating": 1185,
-        "games_history": [
-            {"opponent": "Ori Kopilov", "opponent_nickname": "Orik", "result": "loss", "date": "2025-03-12 15:30"},
-         ],
-         "friends": ["Orik"],
-         "role": "member",
-         "ban_end": None
-    },
-    "johndoe@example.com": {
-         "password": generate_password_hash("DoePass456"),
-         "nickname": "JohnD",
-         "first_name": "John",
-         "last_name": "Doe",
-         "phone_number": "000-000-0000",
-         "country": "USA",
-         "rating": 1202,
-        "games_history": [
-            {"opponent": "Ori Kopilov", "opponent_nickname": "Orik", "result": "draw", "date": "2025-03-11 20:15"},
-         ],
-         "friends": ["Orik"],
-         "role": "user",
-         "ban_end": None
-    }
-}
-
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -95,15 +59,6 @@ def login_required(f):
             return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated_function
-
-#
-@app.context_processor
-def inject_current_user():
-    current_user = None
-    if 'user' in session:
-        # Look up the user in the fake DB
-        current_user = users_db.get(session['user'])
-    return dict(current_user=current_user)
 
 
 # Utility function to sanitize input
@@ -119,9 +74,27 @@ def home():
     return render_template('home.html')
 
 
-#Sign up page
+def is_valid_email(email):
+    return re.match(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$", email) and len(email) <= 255
+
+def is_valid_password(password):
+    return (
+        len(password) >= 8 and len(password) <= 64 and
+        re.search(r'[A-Z]', password) and
+        re.search(r'[a-z]', password) and
+        re.search(r'\d', password) and
+        re.search(r'[!@#$%^&*(),.?":{}|<>]', password)
+    )
+
+def is_valid_phone(phone):
+    return re.match(r"^\+?\d{9,15}$", phone)
+
+def is_valid_nickname(nickname):
+    return re.match(r"^[a-zA-Z0-9_]{3,20}$", nickname)
+
+# עמוד הרשמה
 @app.route('/sign_up', methods=['GET', 'POST'])
-@csrf.exempt
+@limiter.limit("5 per minute")  # חוסם ניסיונות מרובים תוך דקה
 def sign_up():
     if 'user' in session:
         return redirect(url_for('home'))
@@ -129,8 +102,8 @@ def sign_up():
     if request.method == 'POST':
         try:
             data = request.get_json()
-            email = sanitize(data.get('email'))
-            password = data.get('password')  # No hashing, using as provided
+            email = sanitize(data.get('email')).strip()
+            password = data.get('password').strip()
             first_name = sanitize(data.get('first_name'))
             last_name = sanitize(data.get('last_name'))
             nickname = sanitize(data.get('nickname'))
@@ -139,37 +112,52 @@ def sign_up():
             
             db = get_db()
             cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-            
-            # Check if email exists
+
+            # בדיקת קיום אימייל
             cur.execute("SELECT email FROM users WHERE email = %s", (email,))
             if cur.fetchone():
                 return jsonify({"success": False, "message": "האימייל כבר קיים במערכת."})
-            
-            # Check that the nickname is unique
+
+            # בדיקת ייחודיות הניקניימ
             cur.execute("SELECT nickname FROM users WHERE nickname = %s", (nickname,))
             if cur.fetchone():
                 return jsonify({"success": False, "message": "הניקניימ כבר בשימוש."})
-            
-            # Insert the password directly without hashing.
+
+            # האשינג של הסיסמה
+            hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+            # שימוש לפני הכנסת הנתונים למסד הנתונים:
+            if not is_valid_email(email):
+                return jsonify({"success": False, "message": "אימייל לא תקין."})
+            if not is_valid_password(password):
+                return jsonify({"success": False, "message": "סיסמה לא עומדת בתנאים."})
+            if not is_valid_phone(phone_number):
+                return jsonify({"success": False, "message": "מספר טלפון לא תקין."})
+            if not is_valid_nickname(nickname):
+                return jsonify({"success": False, "message": "שם משתמש לא תקין."})
+            # הכנסה למסד הנתונים
             cur.execute("""
                 INSERT INTO users (
                     email, password, first_name, last_name, nickname, 
                     phone_number, country, rating, role
                 )
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """, (email, password, first_name, last_name, nickname, phone_number, country, 1200, 'user'))
+            """, (email, hashed_password, first_name, last_name, nickname, phone_number, country, 1200, 'user'))
             db.commit()
-            
-            # Create session to log the user in immediately
+
+            # יצירת סשן והכנסת המשתמש למערכת
             session['user'] = email
             session['role'] = 'user'
-            
+
             return jsonify({"success": True, "message": "המשתמש נרשם ונכנס בהצלחה!"})
+
         except Exception as e:
             current_app.logger.error(f"Error in sign up: {e}")
             return jsonify({"success": False, "message": "שגיאה בשרת"}), 500
-    
+
     return render_template('sign_up.html')
+
+limiter.limit("3 per minute")(sign_up)
 
 
 #About page
@@ -178,7 +166,8 @@ def about():
     return render_template('about.html')
 
 
-# Login page
+# עמוד התחברות
+@limiter.limit("5 per minute")  # חוסם ניסיונות מרובים תוך דקה
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if 'user' in session:
@@ -187,104 +176,146 @@ def login():
         cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         cur.execute("SELECT * FROM users WHERE email = %s", (email,))
         user = cur.fetchone()
-        print(f"User from session: {user}")
+        print(f"משתמש מהסשן: {user}")
 
         if user["ban_end"] and user["ban_end"] > datetime.now(timezone.utc):
-            return jsonify({"success": False, "message": "You are banned until " + user["ban_end"].strftime('%Y-%m-%d %H:%M:%S')})
+            return jsonify({"success": False, "message": f"אתה חסום עד {user['ban_end'].strftime('%Y-%m-%d %H:%M:%S')}"})
 
     if request.method == 'POST':
-        # Remove accidental whitespace from the inputs.
         email = sanitize(request.form.get('email')).strip()
         password = request.form.get('password').strip()
 
-        # Debug prints
-        print(f"Email entered: {email!r}")
-        print(f"Password entered: {password!r}")
+        print(f"אמייל שהוזן: {email!r}")
+        print(f"סיסמה שהוזנה: {password!r}")
 
         db = get_db()
         cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         cur.execute("SELECT * FROM users WHERE email = %s", (email,))
         user = cur.fetchone()
 
-        print(f"User from DB: {user}")
+        print(f"משתמש מה-DB: {user}")
         if user:
-            print(f"Stored password: {user['password']}")
+            stored_hash = user['password']
+            
+            if isinstance(stored_hash, bytes):
+                stored_hash = stored_hash.decode('utf-8')
 
-        # Compare passwords directly (ONLY FOR TESTING, NOT SECURE)
-        if user and user['password'] == password:
-            print(f"User authenticated: {user}")
-            if user["ban_end"] and user["ban_end"] > datetime.now(timezone.utc):
-                return jsonify({"success": False, "message": "You are banned until " + user["ban_end"].strftime('%Y-%m-%d %H:%M:%S')})
-            user['ban_end'] = None
-            session['user'] = email
-            session['role'] = user['role']
-            session['clan'] = user['clan']
-            return jsonify({"success": True, "message": "Login successful!"})
-        else:
-            print("Authentication failed: Incorrect email or password.")
-            return jsonify({"success": False, "message": "Incorrect email or password"})
+            print(f"האש מה-DB: {stored_hash!r}")
+
+            if not stored_hash:
+                print("שגיאה: ערך ההאש ריק")
+                return jsonify({"success": False, "message": "שגיאת התחברות - נסה שנית"})
+
+            # בדיקת מבנה ההאש
+            if stored_hash.startswith("$2a$") or stored_hash.startswith("$2b$"):
+                print("מזהה האש תקין, בודק התאמה...")
+            else:
+                print(f"שגיאה: מבנה ההאש לא צפוי: {stored_hash}")
+                return jsonify({"success": False, "message": "שגיאת התחברות - נסה שנית"})
+
+            # בדיקת התאמת הסיסמה
+            try:
+                if bcrypt.checkpw(password.encode('utf-8'), stored_hash.encode('utf-8')):
+                    print("התחברות הצליחה!")
+                    
+                    if user["ban_end"] and user["ban_end"] > datetime.now(timezone.utc):
+                        return jsonify({"success": False, "message": f"אתה חסום עד {user['ban_end'].strftime('%Y-%m-%d %H:%M:%S')}"} )
+                    
+                    user['ban_end'] = None
+                    session['user'] = email
+                    session['role'] = user['role']
+                    session['clan'] = user['clan']
+                    session.permanent = True
+                    app.permanent_session_lifetime = timedelta(hours=1)  # סשן יפוג אחרי שעה
+                    return jsonify({"success": True, "message": "התחברת בהצלחה!"})
+                else:
+                    print("שגיאה: אימייל או סיסמה שגויים.")
+                    return jsonify({"success": False, "message": "אימייל או סיסמה שגויים"})
+            except Exception as e:
+                print(f"שגיאה בזמן בדיקת הסיסמה: {e}")
+                return jsonify({"success": False, "message": "שגיאת מערכת - נסה שנית"})
 
     return render_template('login.html')
+
+limiter.limit("3 per minute")(login)
 
 
 #Logout
 @app.route('/logout')
 def logout():
-    session.pop('user', None)
-    session.pop('role', None)
-    session.pop('clan', None)
-    return redirect(url_for('login'))
+    session.clear()  # מנקה את כל הנתונים בסשן
+    session.modified = True  # מוודא שהשינויים נשמרים
+    response = redirect(url_for('login'))
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
+
 
 
 #Forgot password page
+@limiter.limit("5 per minute")  # מגביל ניסיון שחזור ל-5 לדקה
 @app.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():
     token = sanitize(request.args.get('token')) or sanitize(request.form.get('token'))
-    
+
     if request.method == 'POST':
         db = get_db()
         cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
         if token:
-            new_password = request.form.get('new_password')
-            if token != session.get('reset_token'):
-                return jsonify({"success": False, "message": "Invalid or expired token."})
-            email = session.get('user')
-            cur.execute("SELECT email FROM users WHERE email = %s", (email,))
-            if cur.fetchone():
-                # Directly update the password without hashing.
-                cur.execute("UPDATE users SET password = %s WHERE email = %s", (new_password, email))
-                db.commit()
-                session.pop('reset_token', None)
-                return jsonify({"success": True, "message": "הסיסמה שונתה בהצלחה!"})
-            else:
+            new_password = request.form.get('new_password').strip()
+            stored_token = session.get('reset_token')
+            email = session.get('reset_email')
+
+            if not stored_token or token != stored_token or not email:
+                return jsonify({"success": False, "message": "טוקן שגוי או פג תוקף."})
+
+            cur.execute("SELECT password FROM users WHERE email = %s", (email,))
+            user = cur.fetchone()
+
+            if not user:
                 return jsonify({"success": False, "message": "משתמש לא קיים."})
+
+            hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+            cur.execute("UPDATE users SET password = %s WHERE email = %s", (hashed_password, email))
+            db.commit()
+
+            session.pop('reset_token', None)
+            session.pop('reset_email', None)
+
+            return jsonify({"success": True, "message": "הסיסמה שונתה בהצלחה!"})
+
         else:
-            email = sanitize(request.form.get('email'))
+            email = sanitize(request.form.get('email')).strip()
             cur.execute("SELECT email FROM users WHERE email = %s", (email,))
-            if cur.fetchone():
-                reset_token = ''.join(random.choices(string.ascii_letters + string.digits, k=20))
-                session['reset_token'] = reset_token
-                send_reset_email(email, reset_token)
-                return jsonify({"success": True, "message": "קישור לשחזור סיסמה נשלח אליך!"})
-            else:
+            
+            if not cur.fetchone():
                 return jsonify({"success": False, "message": "האימייל לא נמצא במערכת."})
-    
+
+            reset_token = ''.join(random.choices(string.ascii_letters + string.digits, k=64))
+            session['reset_token'] = reset_token
+            session['reset_email'] = email
+
+            send_reset_email(email, reset_token)
+
+            return jsonify({"success": True, "message": "קישור לשחזור סיסמה נשלח אליך!"})
+
     return render_template('forgot_password.html', token=token)
 
 
-#Reset password function
+# not working yet!
 def send_reset_email(user_email, reset_token):
+    sender_email = os.getenv("BREVO_EMAIL")  
+    smtp_username = os.getenv("BREVO_API_KEY")  
+    smtp_server = "smtp-relay.brevo.com"
+    smtp_port = 587  
 
-    sender_email = "orikopilov2007@gmail.com"  # Your email here
-    sender_password = "Orik2007"  # Your email password or an app-specific password
-    
     receiver_email = user_email
     subject = "שחזור סיסמה - ChessAI"
-    body = (f"שלום, \n\nקיבלת קישור לשחזור סיסמה:\n"
-            f"http://localhost:5000/reset_password/{reset_token}\n\n"
-            "בברכה, צוות ChessAI")
+    body = f"שלום,\n\nקיבלת קישור לשחזור סיסמה:\nhttp://localhost:5000/forgot_password?token={reset_token}\n\nבברכה, צוות ChessAI"
 
-    # Create message
     msg = MIMEMultipart()
     msg['From'] = sender_email
     msg['To'] = receiver_email
@@ -292,12 +323,19 @@ def send_reset_email(user_email, reset_token):
     msg.attach(MIMEText(body, 'plain'))
 
     try:
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
-            server.login(sender_email, sender_password)
+        print("מתחבר לשרת SMTP...")
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.set_debuglevel(1)  # Debug SMTP
+            server.starttls()  
+            print("מבצע התחברות עם שם משתמש (API Key)...")
+            server.login(smtp_username, "")  
+            print("שולח אימייל ל:", receiver_email)
             server.sendmail(sender_email, receiver_email, msg.as_string())
-        print(f"Password reset email sent to {user_email}")
+            print(f"אימייל נשלח בהצלחה ל-{user_email}")
     except Exception as e:
-        print(f"Error sending email: {e}")
+        print(f"שגיאה בשליחת אימייל: {e}")
+
+
 
 
 # Updated function to get the current logged-in user based on session data and the fake DB
