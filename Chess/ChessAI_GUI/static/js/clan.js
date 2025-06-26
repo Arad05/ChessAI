@@ -1,4 +1,3 @@
-// clan.js
 
 document.addEventListener("DOMContentLoaded", function () {
     const searchForm = document.getElementById("clan-search-form");

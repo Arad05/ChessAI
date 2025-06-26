@@ -382,3 +382,9 @@ footer a.signup-link {
   color: white;
 }
 
+.page-title {
+  text-align: center;
+  color: #ffffff;
+  font-size: 2rem;
+  margin-bottom: 20px;
+}

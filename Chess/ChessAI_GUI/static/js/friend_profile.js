@@ -47,6 +47,23 @@ document.addEventListener("DOMContentLoaded", function() {
         collapseHistoryButton.style.display = historyLimit > 5 ? "block" : "none";
     }
 
+    function openChat(friendNickname) {
+        const message = prompt("Enter your message to " + friendNickname + ":");
+        if (message) {
+            fetch('/send_message', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({to: friendNickname, message: message})
+            })
+            .then(res => res.json())
+            .then(data => {
+            if (data.success) alert("Message sent!");
+            else alert("Error: " + data.error);
+            });
+        }
+    }
+
+
     showMoreFriendsButton?.addEventListener("click", function() {
         friendLimit += 5;
         updateFriendList();

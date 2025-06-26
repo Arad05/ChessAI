@@ -37,7 +37,7 @@ app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
 
 
-limiter = Limiter(get_remote_address, app=app, default_limits=["5 per minute"])
+limiter = Limiter(get_remote_address, app=app, default_limits=["200 per minute"])
 
 
 # Initialize CSRF protection
@@ -94,7 +94,7 @@ def is_valid_nickname(nickname):
 
 # עמוד הרשמה
 @app.route('/sign_up', methods=['GET', 'POST'])
-@limiter.limit("5 per minute")  # חוסם ניסיונות מרובים תוך דקה
+@limiter.limit("20 per minute")  # חוסם ניסיונות מרובים תוך דקה
 def sign_up():
     if 'user' in session:
         return redirect(url_for('home'))
@@ -157,7 +157,7 @@ def sign_up():
 
     return render_template('sign_up.html')
 
-limiter.limit("3 per minute")(sign_up)
+limiter.limit("200 per minute")(sign_up)
 
 
 #About page
@@ -167,7 +167,7 @@ def about():
 
 
 # עמוד התחברות
-@limiter.limit("5 per minute")  # חוסם ניסיונות מרובים תוך דקה
+@limiter.limit("10 per minute")  # חוסם ניסיונות מרובים תוך דקה
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if 'user' in session:
@@ -237,7 +237,7 @@ def login():
 
     return render_template('login.html')
 
-limiter.limit("3 per minute")(login)
+limiter.limit("10 per minute")(login)
 
 
 #Logout
@@ -254,7 +254,7 @@ def logout():
 
 
 #Forgot password page
-@limiter.limit("5 per minute")  # מגביל ניסיון שחזור ל-5 לדקה
+@limiter.limit("10 per minute")  # מגביל ניסיון שחזור ל-5 לדקה
 @app.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():
     token = sanitize(request.args.get('token')) or sanitize(request.form.get('token'))
@@ -665,7 +665,6 @@ def admin_dashboard():
         return jsonify({"success": True, "message": message})
 
 
-
 def get_clan_members(clan_name):
     db = get_db()
     cur = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
@@ -868,6 +867,77 @@ def clan_action():
     db.commit()
     cur.close()
     return redirect(url_for('clan_page'))
+
+
+@app.route('/send_message', methods=['POST'])
+@login_required
+def send_message():
+    try:
+        sender = session.get('user')
+        data = request.get_json(silent=True)
+
+        if data is None:
+            return jsonify({'success': False, 'error': 'Invalid JSON data'}), 400
+
+        receiver = sanitize(data.get('to'))
+        message_text = sanitize(data.get('message'))
+
+        if not sender or not receiver or not message_text:
+            return jsonify({'success': False, 'error': 'Invalid data'}), 400
+
+        db = get_db()
+        cur = db.cursor()
+
+        cur.execute("SELECT conversations FROM messages WHERE nickname = %s", (sender,))
+        sender_data = cur.fetchone()
+        raw_conversations = sender_data[0] if sender_data else None
+        if isinstance(raw_conversations, str):
+            conversations = json.loads(raw_conversations)
+        elif isinstance(raw_conversations, dict):
+            conversations = raw_conversations
+        elif raw_conversations is None:
+            conversations = {}
+        else:
+            conversations = {}
+
+
+        conversations.setdefault(receiver, []).append({
+            'from': sender,
+            'message': message_text,
+            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        })
+
+        cur.execute("""
+            INSERT INTO messages (nickname, conversations)
+            VALUES (%s, %s)
+            ON CONFLICT (nickname)
+            DO UPDATE SET conversations = EXCLUDED.conversations
+        """, (sender, json.dumps(conversations)))
+
+        db.commit()
+        return jsonify({'success': True, 'message': 'Message sent!'})
+
+    except Exception as e:
+        print("Error while sending message:", e)
+        return jsonify({'success': False, 'error': 'Server error occurred'}), 500
+
+
+
+
+@app.route('/messages/<friend_nickname>')
+@login_required
+def show_messages(friend_nickname):
+    user = session.get('user')
+    db = get_db()
+    cur = db.cursor()
+    cur.execute("SELECT conversations FROM messages WHERE nickname = %s", (user,))
+    row = cur.fetchone()
+    conversations = row[0] if row else {}
+
+    messages = conversations.get(friend_nickname, [])
+    messages.sort(key=lambda m: m['timestamp']) # Sort messages by timestamp
+
+    return render_template('messages.html', friend_nickname=friend_nickname, messages=messages, current_user=session.get('user'))
 
 
 if __name__ == "__main__":
