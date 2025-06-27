@@ -16,5 +16,3 @@ ChessAI is a web-based chess platform built with Flask, enabling online play, bo
 
 ---
 
-## 🗂️ Project Structure
-
